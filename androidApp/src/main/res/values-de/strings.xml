@@ -1,0 +1,4 @@
+<resources>
+    <string name="monitor_notification_title">Termine werden geprüft</string>
+    <string name="monitor_channel_name">Überwachung</string>
+</resources>

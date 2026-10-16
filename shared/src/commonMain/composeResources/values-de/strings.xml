@@ -1,0 +1,22 @@
+<resources>
+    <string name="tasks_title">Aufgaben</string>
+    <string name="tasks_empty">Keine Aufgaben</string>
+    <string name="tasks_add">Aufgabe hinzufügen</string>
+    <string name="task_title">Dienstleistung %1$s</string>
+    <string name="setup_title">Neue Aufgabe</string>
+    <string name="setup_service_label">Dienstleistungs-ID</string>
+    <string name="setup_service_error">Nummer der Dienstleistung eingeben</string>
+    <string name="setup_locations_label">Standort-IDs, durch Komma getrennt (leer = alle)</string>
+    <string name="setup_locations_error">Nur Nummern, durch Komma getrennt</string>
+    <string name="setup_interval_label">Abfrageintervall in Minuten</string>
+    <string name="setup_interval_error">Ein Vielfaches von %1$s, mindestens %1$s</string>
+    <string name="setup_next">Weiter</string>
+    <string name="setup_add">Hinzufügen</string>
+    <string name="status_book">Zur Buchung</string>
+    <string name="status_available">Termine frei</string>
+    <string name="status_none">Keine Termine</string>
+    <string name="status_blocked">Zugriff gesperrt</string>
+    <string name="status_unknown">Unbekannt</string>
+    <string name="status_never">Noch nicht geprüft</string>
+    <string name="navigate_back">Zurück</string>
+</resources>

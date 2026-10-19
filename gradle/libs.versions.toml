@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.4.20"
-agp = "9.4.1"
+agp = "9.3.0"
 termin-core = "0.1.0"
 coroutines = "1.11.0"
 serialization = "1.11.0"
@@ -16,7 +16,7 @@ sdk-compile = "37"
 sdk-min = "26"
 
 [libraries]
-termin-core = { module = "io.github.jied83:termin-core", version.ref = "termin-core" }
+termin-core = { module = "com.github.jied83.termin-core:termin-core", version.ref = "termin-core" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }

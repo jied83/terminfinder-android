@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import termin.android.logDebug
 import kotlin.time.Duration.Companion.minutes
 
 class MonitorService : Service() {
@@ -23,6 +24,7 @@ class MonitorService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        logDebug("MonitorService started startId=$startId flags=$flags")
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
@@ -37,6 +39,7 @@ class MonitorService : Service() {
                 graph.scheduler.reschedule()
                 graph.runner.runDue()
             } finally {
+                logDebug("MonitorService finished startId=$startId")
                 if (wakeLock.isHeld) wakeLock.release()
                 stopSelf(startId)
             }

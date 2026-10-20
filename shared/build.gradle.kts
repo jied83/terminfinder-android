@@ -12,7 +12,7 @@ kotlin {
         compileSdk = libs.versions.sdk.compile.get().toInt()
         minSdk = libs.versions.sdk.min.get().toInt()
         androidResources { enable = true }
-        withHostTest {}
+        withHostTest { isReturnDefaultValues = true }
     }
 
     sourceSets {

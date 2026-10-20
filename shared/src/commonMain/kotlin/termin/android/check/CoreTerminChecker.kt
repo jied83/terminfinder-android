@@ -3,6 +3,7 @@ package termin.android.check
 import termin.android.domain.CheckRecord
 import termin.android.domain.MonitorTask
 import termin.android.domain.TerminChecker
+import termin.android.logDebug
 import terminwatcher.core.api.TerminClient
 import kotlin.time.Clock
 
@@ -12,7 +13,15 @@ class CoreTerminChecker(
 ) : TerminChecker {
 
     override suspend fun check(task: MonitorTask): CheckRecord {
-        val result = client.check(task.query)
+        logDebug("api check task=${task.id} service=${task.serviceId} locations=${task.locations}")
+        val started = clock.now()
+        val result = try {
+            client.check(task.query)
+        } catch (e: Throwable) {
+            logDebug("api check task=${task.id} failed after ${clock.now() - started}: $e")
+            throw e
+        }
+        logDebug("api check task=${task.id} status=${result.status} dates=${result.dates} in ${clock.now() - started}")
         return CheckRecord(task.id, clock.now(), result.status, result.dates)
     }
 }

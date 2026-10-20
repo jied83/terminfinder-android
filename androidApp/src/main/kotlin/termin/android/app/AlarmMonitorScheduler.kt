@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import termin.android.domain.MonitorScheduler
 import termin.android.domain.TaskRepository
 import termin.android.domain.Ticks
+import termin.android.logDebug
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
@@ -24,13 +25,23 @@ class AlarmMonitorScheduler(
         val period = Ticks.period(tasks.observeAll().first().map { it.intervalMinutes })
         val alarm = alarmIntent()
         when {
-            period == null -> alarmManager.cancel(alarm)
-            AlarmManagerCompat.canScheduleExactAlarms(alarmManager) -> AlarmManagerCompat.setExactAndAllowWhileIdle(
-                alarmManager,
-                AlarmManager.RTC_WAKEUP,
-                (clock.now() + period.minutes).toEpochMilliseconds(),
-                alarm,
-            )
+            period == null -> {
+                logDebug("reschedule: no tasks, alarm cancelled")
+                alarmManager.cancel(alarm)
+            }
+
+            AlarmManagerCompat.canScheduleExactAlarms(alarmManager) -> {
+                val next = clock.now() + period.minutes
+                logDebug("reschedule: period=${period}m next alarm at $next")
+                AlarmManagerCompat.setExactAndAllowWhileIdle(
+                    alarmManager,
+                    AlarmManager.RTC_WAKEUP,
+                    next.toEpochMilliseconds(),
+                    alarm,
+                )
+            }
+
+            else -> logDebug("reschedule: exact alarms not permitted, no alarm scheduled")
         }
     }
 

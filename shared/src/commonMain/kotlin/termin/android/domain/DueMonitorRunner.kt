@@ -3,6 +3,7 @@ package termin.android.domain
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import termin.android.logDebug
 import kotlin.time.Clock
 
 class DueMonitorRunner(
@@ -15,10 +16,15 @@ class DueMonitorRunner(
 
     override suspend fun runDue() = mutex.withLock {
         val all = tasks.observeAll().first()
-        val period = Ticks.period(all.map { it.intervalMinutes }) ?: return@withLock
+        val period = Ticks.period(all.map { it.intervalMinutes })
+        if (period == null) {
+            logDebug("runDue: no tasks configured, nothing to check")
+            return@withLock
+        }
         val latest = log.observeLatest().first()
         val now = clock.now()
-        all.filter { Ticks.isDue(latest[it.id]?.at, it.intervalMinutes, period, now) }
-            .forEach { log.append(checker.check(it)) }
+        val due = all.filter { Ticks.isDue(latest[it.id]?.at, it.intervalMinutes, period, now) }
+        logDebug("runDue: tasks=${all.size} period=${period}m due=${due.map { it.id }}")
+        due.forEach { log.append(checker.check(it)) }
     }
 }

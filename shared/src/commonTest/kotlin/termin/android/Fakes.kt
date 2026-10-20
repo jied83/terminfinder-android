@@ -22,10 +22,17 @@ class FakeTasks(vararg initial: MonitorTask) : TaskRepository {
     override fun observeAll(): Flow<List<MonitorTask>> = tasks
 
     override suspend fun add(draft: TaskDraft): MonitorTask {
-        val task = MonitorTask(tasks.value.size + 1L, draft.serviceId, draft.locations, draft.intervalMinutes)
+        val id = (tasks.value.maxOfOrNull { it.id } ?: 0) + 1
+        val task = MonitorTask(id, draft.serviceId, draft.locations, draft.intervalMinutes)
         tasks.update { it + task }
         return task
     }
+
+    override suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int) = tasks.update { all ->
+        all.map { if (it.id == id) it.copy(locations = locations, intervalMinutes = intervalMinutes) else it }
+    }
+
+    override suspend fun remove(id: Long) = tasks.update { all -> all.filterNot { it.id == id } }
 }
 
 class FakeLog : CheckLog {

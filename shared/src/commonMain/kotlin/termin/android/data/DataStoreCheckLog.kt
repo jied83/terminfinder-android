@@ -20,6 +20,7 @@ class DataStoreCheckLog(
 
     override suspend fun append(record: CheckRecord) {
         store.updateData { state ->
+            if (state.tasks.none { it.id == record.taskId }) return@updateData state
             val history = (listOf(record) + state.records[record.taskId].orEmpty()).take(limit)
             state.copy(records = state.records + (record.taskId to history))
         }

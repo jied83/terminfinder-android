@@ -25,4 +25,20 @@ class DataStoreTaskRepository(private val store: DataStore<StoredState>) : TaskR
         }
         return task
     }
+
+    override suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int) {
+        store.updateData { state ->
+            state.copy(
+                tasks = state.tasks.map { task ->
+                    if (task.id == id) task.copy(locations = locations, intervalMinutes = intervalMinutes) else task
+                },
+            )
+        }
+    }
+
+    override suspend fun remove(id: Long) {
+        store.updateData { state ->
+            state.copy(tasks = state.tasks.filterNot { it.id == id }, records = state.records - id)
+        }
+    }
 }

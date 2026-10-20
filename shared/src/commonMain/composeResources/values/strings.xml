@@ -12,7 +12,15 @@
     <string name="setup_interval_error">A multiple of %1$s, at least %1$s</string>
     <string name="setup_next">Next</string>
     <string name="setup_add">Add</string>
+    <string name="edit_title">Edit task</string>
+    <string name="edit_save">Save</string>
     <string name="status_book">Go to booking</string>
+    <string name="status_edit">Edit task</string>
+    <string name="status_delete">Delete task</string>
+    <string name="status_delete_title">Delete task?</string>
+    <string name="status_delete_message">The task and its check history will be removed.</string>
+    <string name="status_delete_confirm">Delete</string>
+    <string name="status_delete_cancel">Cancel</string>
     <string name="status_available">Slots available</string>
     <string name="status_none">No slots</string>
     <string name="status_blocked">Access blocked</string>

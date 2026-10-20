@@ -8,14 +8,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,8 +31,16 @@ import termin.android.feature.tasks.FAB_CLEARANCE
 import termin.android.mvi.CollectEffects
 import termin.android.mvi.Store
 import termin.android.resources.Res
+import termin.android.resources.ic_delete
+import termin.android.resources.ic_edit
 import termin.android.resources.ic_open_in_new
 import termin.android.resources.status_book
+import termin.android.resources.status_delete
+import termin.android.resources.status_delete_cancel
+import termin.android.resources.status_delete_confirm
+import termin.android.resources.status_delete_message
+import termin.android.resources.status_delete_title
+import termin.android.resources.status_edit
 import termin.android.ui.BackTopAppBar
 import termin.android.ui.cardColors
 import termin.android.ui.display
@@ -40,17 +51,54 @@ import termin.android.ui.taskTitle
 fun StatusScreen(
     store: Store<StatusIntent, StatusState, StatusEffect>,
     onBack: () -> Unit,
+    onEdit: (Long) -> Unit,
+    onDeleted: () -> Unit,
 ) {
     val state by store.state.collectAsStateWithLifecycle()
     val uriHandler = LocalUriHandler.current
     store.CollectEffects { effect ->
         when (effect) {
             is StatusEffect.OpenUrl -> uriHandler.openUri(effect.url)
+            is StatusEffect.ToEdit -> onEdit(effect.id)
+            StatusEffect.Deleted -> onDeleted()
         }
     }
 
+    if (state.confirmingDelete) {
+        AlertDialog(
+            onDismissRequest = { store.dispatch(StatusIntent.DismissDelete) },
+            title = { Text(stringResource(Res.string.status_delete_title)) },
+            text = { Text(stringResource(Res.string.status_delete_message)) },
+            confirmButton = {
+                TextButton(onClick = { store.dispatch(StatusIntent.ConfirmDelete) }) {
+                    Text(stringResource(Res.string.status_delete_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { store.dispatch(StatusIntent.DismissDelete) }) {
+                    Text(stringResource(Res.string.status_delete_cancel))
+                }
+            },
+        )
+    }
+
     Scaffold(
-        topBar = { BackTopAppBar(taskTitle(state.serviceId), onBack) },
+        topBar = {
+            BackTopAppBar(taskTitle(state.serviceId), onBack) {
+                IconButton(onClick = { store.dispatch(StatusIntent.Edit) }) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_edit),
+                        contentDescription = stringResource(Res.string.status_edit),
+                    )
+                }
+                IconButton(onClick = { store.dispatch(StatusIntent.Delete) }) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_delete),
+                        contentDescription = stringResource(Res.string.status_delete),
+                    )
+                }
+            }
+        },
         floatingActionButton = {
             if (state.canBook) {
                 ExtendedFloatingActionButton(

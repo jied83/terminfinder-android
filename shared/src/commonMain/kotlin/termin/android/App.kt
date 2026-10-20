@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 import termin.android.domain.CheckLog
 import termin.android.domain.MonitorScheduler
 import termin.android.domain.TaskRepository
+import termin.android.feature.edit.EditScreen
+import termin.android.feature.edit.EditViewModel
 import termin.android.feature.setup.SetupScreen
 import termin.android.feature.setup.SetupViewModel
 import termin.android.feature.status.StatusScreen
@@ -26,6 +28,9 @@ private data object SetupRoute
 
 @Serializable
 private data class StatusRoute(val taskId: Long)
+
+@Serializable
+private data class EditRoute(val taskId: Long)
 
 @Composable
 fun App(tasks: TaskRepository, log: CheckLog, scheduler: MonitorScheduler) {
@@ -49,7 +54,17 @@ fun App(tasks: TaskRepository, log: CheckLog, scheduler: MonitorScheduler) {
             composable<StatusRoute> { entry ->
                 val taskId = entry.toRoute<StatusRoute>().taskId
                 StatusScreen(
-                    store = viewModel { StatusViewModel(taskId, tasks, log) },
+                    store = viewModel { StatusViewModel(taskId, tasks, log, scheduler) },
+                    onBack = { navController.popBackStack() },
+                    onEdit = { navController.navigate(EditRoute(it)) },
+                    onDeleted = { navController.popBackStack() },
+                )
+            }
+            composable<EditRoute> { entry ->
+                val taskId = entry.toRoute<EditRoute>().taskId
+                EditScreen(
+                    store = viewModel { EditViewModel(taskId, tasks, scheduler) },
+                    onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
             }

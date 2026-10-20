@@ -12,7 +12,15 @@
     <string name="setup_interval_error">Ein Vielfaches von %1$s, mindestens %1$s</string>
     <string name="setup_next">Weiter</string>
     <string name="setup_add">Hinzufügen</string>
+    <string name="edit_title">Aufgabe bearbeiten</string>
+    <string name="edit_save">Speichern</string>
     <string name="status_book">Zur Buchung</string>
+    <string name="status_edit">Aufgabe bearbeiten</string>
+    <string name="status_delete">Aufgabe löschen</string>
+    <string name="status_delete_title">Aufgabe löschen?</string>
+    <string name="status_delete_message">Die Aufgabe und ihr Prüfverlauf werden entfernt.</string>
+    <string name="status_delete_confirm">Löschen</string>
+    <string name="status_delete_cancel">Abbrechen</string>
     <string name="status_available">Termine frei</string>
     <string name="status_none">Keine Termine</string>
     <string name="status_blocked">Zugriff gesperrt</string>

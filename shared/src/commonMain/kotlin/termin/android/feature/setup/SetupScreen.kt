@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +29,7 @@ import termin.android.resources.setup_title
 import termin.android.mvi.CollectEffects
 import termin.android.mvi.Store
 import termin.android.ui.BackTopAppBar
+import termin.android.ui.FormField
 
 @Composable
 fun SetupScreen(
@@ -50,7 +49,7 @@ fun SetupScreen(
             modifier = Modifier.fillMaxWidth().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            StepField(
+            FormField(
                 value = state.service,
                 label = stringResource(Res.string.setup_service_label),
                 error = stringResource(Res.string.setup_service_error),
@@ -59,7 +58,7 @@ fun SetupScreen(
                 onChange = { store.dispatch(SetupIntent.ServiceChanged(it)) },
             )
             if (state.step >= SetupStep.LOCATIONS) {
-                StepField(
+                FormField(
                     value = state.locations,
                     label = stringResource(Res.string.setup_locations_label),
                     error = stringResource(Res.string.setup_locations_error),
@@ -69,7 +68,7 @@ fun SetupScreen(
                 )
             }
             if (state.step >= SetupStep.INTERVAL) {
-                StepField(
+                FormField(
                     value = state.interval,
                     label = stringResource(Res.string.setup_interval_label),
                     error = stringResource(Res.string.setup_interval_error, Ticks.MIN_MINUTES),
@@ -90,25 +89,4 @@ fun SetupScreen(
             }
         }
     }
-}
-
-@Composable
-private fun StepField(
-    value: String,
-    label: String,
-    error: String,
-    isError: Boolean,
-    keyboardType: KeyboardType,
-    onChange: (String) -> Unit,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        label = { Text(label) },
-        isError = isError,
-        supportingText = if (isError) ({ Text(error) }) else null,
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        modifier = Modifier.fillMaxWidth(),
-    )
 }

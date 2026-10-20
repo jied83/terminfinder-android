@@ -1,5 +1,6 @@
 package termin.android.ui
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -14,7 +15,11 @@ import termin.android.resources.navigate_back
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackTopAppBar(title: String, onBack: () -> Unit) {
+fun BackTopAppBar(
+    title: String,
+    onBack: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
     TopAppBar(
         title = { Text(title) },
         navigationIcon = {
@@ -22,5 +27,6 @@ fun BackTopAppBar(title: String, onBack: () -> Unit) {
                 Icon(painterResource(Res.drawable.ic_arrow_back), contentDescription = stringResource(Res.string.navigate_back))
             }
         },
+        actions = actions,
     )
 }

@@ -3,6 +3,7 @@ package termin.android.feature
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import termin.android.FakeLog
+import termin.android.FakeScheduler
 import termin.android.FakeTasks
 import termin.android.domain.CheckRecord
 import termin.android.feature.status.StatusEffect
@@ -18,7 +19,9 @@ import kotlin.time.Instant
 
 class StatusViewModelTest : MainDispatcherTest() {
     private val log = FakeLog()
-    private val viewModel by lazy { StatusViewModel(1, FakeTasks(task(1, 2)), log) }
+    private val tasks = FakeTasks(task(1, 2), task(2, 6))
+    private val scheduler = FakeScheduler()
+    private val viewModel by lazy { StatusViewModel(1, tasks, log, scheduler) }
 
     @Test
     fun bookingOpensServicePageWhenLatestHasSlots() = runTest {
@@ -39,5 +42,41 @@ class StatusViewModelTest : MainDispatcherTest() {
         )
 
         assertFalse(viewModel.state.value.canBook)
+    }
+
+    @Test
+    fun editIntentCarriesTaskId() = runTest {
+        viewModel.dispatch(StatusIntent.Edit)
+
+        assertEquals(StatusEffect.ToEdit(1), viewModel.effects.first())
+    }
+
+    @Test
+    fun deleteAsksForConfirmationFirst() {
+        viewModel.dispatch(StatusIntent.Delete)
+
+        assertTrue(viewModel.state.value.confirmingDelete)
+        assertEquals(listOf(task(1, 2), task(2, 6)), tasks.tasks.value)
+    }
+
+    @Test
+    fun dismissingConfirmationKeepsTask() {
+        viewModel.dispatch(StatusIntent.Delete)
+        viewModel.dispatch(StatusIntent.DismissDelete)
+        viewModel.dispatch(StatusIntent.ConfirmDelete)
+
+        assertFalse(viewModel.state.value.confirmingDelete)
+        assertEquals(listOf(task(1, 2), task(2, 6)), tasks.tasks.value)
+        assertEquals(0, scheduler.calls)
+    }
+
+    @Test
+    fun confirmedDeleteRemovesTaskAndReschedules() = runTest {
+        viewModel.dispatch(StatusIntent.Delete)
+        viewModel.dispatch(StatusIntent.ConfirmDelete)
+
+        assertEquals(StatusEffect.Deleted, viewModel.effects.first())
+        assertEquals(listOf(task(2, 6)), tasks.tasks.value)
+        assertEquals(1, scheduler.calls)
     }
 }

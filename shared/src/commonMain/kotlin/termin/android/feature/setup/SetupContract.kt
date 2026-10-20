@@ -1,7 +1,7 @@
 package termin.android.feature.setup
 
 import termin.android.domain.TaskDraft
-import termin.android.domain.Ticks
+import termin.android.domain.TaskInput
 
 enum class SetupStep { SERVICE, LOCATIONS, INTERVAL }
 
@@ -13,16 +13,11 @@ data class SetupState(
     val error: SetupStep? = null,
     val saving: Boolean = false,
 ) {
-    val serviceId: Int? get() = service.trim().toIntOrNull()?.takeIf { it > 0 }
+    val serviceId: Int? get() = TaskInput.serviceId(service)
 
-    val locationIds: List<Int>?
-        get() = if (locations.isBlank()) {
-            emptyList()
-        } else {
-            locations.split(',').map { part -> part.trim().toIntOrNull()?.takeIf { it > 0 } ?: return null }
-        }
+    val locationIds: List<Int>? get() = TaskInput.locationIds(locations)
 
-    val intervalMinutes: Int? get() = interval.trim().toIntOrNull()?.takeIf(Ticks::isValidInterval)
+    val intervalMinutes: Int? get() = TaskInput.intervalMinutes(interval)
 
     fun isValid(step: SetupStep): Boolean = when (step) {
         SetupStep.SERVICE -> serviceId != null

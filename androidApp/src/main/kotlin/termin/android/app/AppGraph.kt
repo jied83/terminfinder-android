@@ -8,12 +8,14 @@ import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import termin.android.check.CoreTerminChecker
 import termin.android.data.DataStoreCheckLog
+import termin.android.data.DataStoreSettingsRepository
 import termin.android.data.DataStoreTaskRepository
 import termin.android.data.StoredStateSerializer
 import termin.android.domain.CheckLog
 import termin.android.domain.DueMonitorRunner
 import termin.android.domain.MonitorRunner
 import termin.android.domain.MonitorScheduler
+import termin.android.domain.SettingsRepository
 import termin.android.domain.TaskRepository
 import terminwatcher.core.api.TerminCore
 import kotlin.time.Clock
@@ -29,11 +31,14 @@ class AppGraph(context: Context) {
 
     val tasks: TaskRepository = DataStoreTaskRepository(store)
     val log: CheckLog = DataStoreCheckLog(store)
+    val settings: SettingsRepository = DataStoreSettingsRepository(store)
     val scheduler: MonitorScheduler = AlarmMonitorScheduler(context, tasks, clock)
     val runner: MonitorRunner = DueMonitorRunner(
         tasks = tasks,
         log = log,
         checker = CoreTerminChecker(TerminCore.client(engine = OkHttp), clock),
         clock = clock,
+        settings = settings,
+        notifier = AndroidNewDatesNotifier(context),
     )
 }

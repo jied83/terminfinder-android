@@ -12,6 +12,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,6 +30,8 @@ import termin.android.mvi.CollectEffects
 import termin.android.mvi.Store
 import termin.android.resources.Res
 import termin.android.resources.ic_add
+import termin.android.resources.ic_settings
+import termin.android.resources.settings_title
 import termin.android.resources.tasks_add
 import termin.android.resources.tasks_empty
 import termin.android.resources.tasks_title
@@ -42,17 +45,31 @@ fun TasksScreen(
     store: Store<TasksIntent, TasksState, TasksEffect>,
     onOpen: (Long) -> Unit,
     onAdd: () -> Unit,
+    onSettings: () -> Unit,
 ) {
     val state by store.state.collectAsStateWithLifecycle()
     store.CollectEffects { effect ->
         when (effect) {
             is TasksEffect.ToStatus -> onOpen(effect.id)
             TasksEffect.ToSetup -> onAdd()
+            TasksEffect.ToSettings -> onSettings()
         }
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.tasks_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.tasks_title)) },
+                actions = {
+                    IconButton(onClick = { store.dispatch(TasksIntent.Settings) }) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_settings),
+                            contentDescription = stringResource(Res.string.settings_title),
+                        )
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(Res.string.tasks_add)) },

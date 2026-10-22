@@ -40,5 +40,7 @@ class TasksViewModelTest : MainDispatcherTest() {
         assertEquals(TasksEffect.ToStatus(7), viewModel.effects.first())
         viewModel.dispatch(TasksIntent.Add)
         assertEquals(TasksEffect.ToSetup, viewModel.effects.first())
+        viewModel.dispatch(TasksIntent.Settings)
+        assertEquals(TasksEffect.ToSettings, viewModel.effects.first())
     }
 }

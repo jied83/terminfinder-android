@@ -1,4 +1,9 @@
 <resources>
     <string name="monitor_notification_title">Termine werden geprüft</string>
     <string name="monitor_channel_name">Überwachung</string>
+    <string name="alert_channel_name">Neue Termine</string>
+    <string name="alert_channel_description">Meldungen, wenn eine überwachte Dienstleistung Termine anbietet, die vorher nicht verfügbar waren.</string>
+    <string name="alert_title">Neue Termine: Dienstleistung %1$d</string>
+    <string name="alert_offices">Standorte %1$s</string>
+    <string name="alert_all_offices">Alle Standorte</string>
 </resources>

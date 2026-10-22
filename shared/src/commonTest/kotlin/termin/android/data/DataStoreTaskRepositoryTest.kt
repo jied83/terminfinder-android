@@ -34,6 +34,21 @@ class DataStoreTaskRepositoryTest {
     }
 
     @Test
+    fun changingOfficesDropsTheKnownDatesBaselineButChangingTheIntervalKeepsIt() = runTest {
+        val store = newStore(backgroundScope)
+        val repository = DataStoreTaskRepository(store)
+        val log = DataStoreCheckLog(store)
+        repository.add(TaskDraft(120686, listOf(122210), 4))
+        log.append(CheckRecord(1, Instant.fromEpochSeconds(1), Status.AVAILABLE, listOf("2026-10-20")))
+
+        repository.update(1, listOf(122210), 10)
+        assertEquals(mapOf(1L to setOf("2026-10-20")), log.knownDates())
+
+        repository.update(1, listOf(122217), 10)
+        assertEquals(emptyMap(), log.knownDates())
+    }
+
+    @Test
     fun removeDropsTheTaskAndItsHistoryWhoseIdCanBeReused() = runTest {
         val store = newStore(backgroundScope)
         val repository = DataStoreTaskRepository(store)

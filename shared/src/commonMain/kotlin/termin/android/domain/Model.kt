@@ -21,7 +21,10 @@ data class CheckRecord(
     val at: Instant,
     val status: Status,
     val dates: List<String>,
+    val newDates: List<String> = emptyList(),
 )
+
+val Status.isParsed: Boolean get() = this == Status.AVAILABLE || this == Status.NONE
 
 data class TaskDraft(
     val serviceId: Int,

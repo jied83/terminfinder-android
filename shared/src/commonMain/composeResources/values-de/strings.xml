@@ -26,5 +26,8 @@
     <string name="status_blocked">Zugriff gesperrt</string>
     <string name="status_unknown">Unbekannt</string>
     <string name="status_never">Noch nicht geprüft</string>
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_notify_new_dates">Über neue Termine benachrichtigen</string>
+    <string name="settings_notify_new_dates_hint">Eine Benachrichtigung senden, wenn eine Prüfung Termine findet, die vorher nicht verfügbar waren.</string>
     <string name="navigate_back">Zurück</string>
 </resources>

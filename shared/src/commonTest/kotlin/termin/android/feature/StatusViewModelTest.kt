@@ -24,14 +24,33 @@ class StatusViewModelTest : MainDispatcherTest() {
     private val viewModel by lazy { StatusViewModel(1, tasks, log, scheduler) }
 
     @Test
-    fun bookingOpensServicePageWhenLatestHasSlots() = runTest {
+    fun bookingOpensTheCalendarWhenLatestHasSlots() = runTest {
         log.append(CheckRecord(1, Instant.fromEpochSeconds(1), Status.NONE, emptyList()))
         log.append(CheckRecord(1, Instant.fromEpochSeconds(2), Status.AVAILABLE, listOf("2026-10-20")))
 
         assertTrue(viewModel.state.value.canBook)
         assertEquals(2, viewModel.state.value.history.size)
         viewModel.dispatch(StatusIntent.Book)
-        assertEquals(StatusEffect.OpenUrl("https://service.berlin.de/dienstleistung/120686/"), viewModel.effects.first())
+        assertEquals(
+            StatusEffect.OpenUrl("https://service.berlin.de/terminvereinbarung/termin/all/120686/"),
+            viewModel.effects.first(),
+        )
+    }
+
+    @Test
+    fun bookingKeepsTheTasksOfficeFilter() = runTest {
+        tasks.update(1, listOf(122210, 122217), 2)
+        log.append(CheckRecord(1, Instant.fromEpochSeconds(1), Status.AVAILABLE, listOf("2026-10-20")))
+
+        viewModel.dispatch(StatusIntent.Book)
+
+        assertEquals(
+            StatusEffect.OpenUrl(
+                "https://service.berlin.de/terminvereinbarung/termin/tag.php" +
+                    "?termin=1&anliegen[]=120686&dienstleister[]=122210&dienstleister[]=122217",
+            ),
+            viewModel.effects.first(),
+        )
     }
 
     @Test

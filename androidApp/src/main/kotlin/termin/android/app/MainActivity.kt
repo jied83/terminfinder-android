@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { App(graph.tasks, graph.log, graph.scheduler) }
+        setContent { App(graph.tasks, graph.log, graph.scheduler, graph.settings) }
         if (savedInstanceState == null) requestNotifications()
     }
 

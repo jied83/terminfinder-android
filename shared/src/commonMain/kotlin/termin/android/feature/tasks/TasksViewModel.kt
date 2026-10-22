@@ -24,5 +24,6 @@ class TasksViewModel(
     override fun dispatch(intent: TasksIntent) = when (intent) {
         is TasksIntent.Open -> emit(TasksEffect.ToStatus(intent.id))
         TasksIntent.Add -> emit(TasksEffect.ToSetup)
+        TasksIntent.Settings -> emit(TasksEffect.ToSettings)
     }
 }

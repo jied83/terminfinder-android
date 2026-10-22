@@ -11,6 +11,8 @@ class DueMonitorRunner(
     private val log: CheckLog,
     private val checker: TerminChecker,
     private val clock: Clock,
+    private val settings: SettingsRepository,
+    private val notifier: NewDatesNotifier,
 ) : MonitorRunner {
     private val mutex = Mutex()
 
@@ -25,6 +27,15 @@ class DueMonitorRunner(
         val now = clock.now()
         val due = all.filter { Ticks.isDue(latest[it.id]?.at, it.intervalMinutes, period, now) }
         logDebug("runDue: tasks=${all.size} period=${period}m due=${due.map { it.id }}")
-        due.forEach { log.append(checker.check(it)) }
+        val known = log.knownDates()
+        val notify = settings.observe().first().notifyNewDates
+        due.forEach { task ->
+            val record = checker.check(task, known[task.id].orEmpty())
+            log.append(record)
+            if (notify && record.newDates.isNotEmpty()) {
+                logDebug("runDue: task=${task.id} new dates=${record.newDates}, notifying")
+                notifier.notify(task, record.newDates)
+            }
+        }
     }
 }

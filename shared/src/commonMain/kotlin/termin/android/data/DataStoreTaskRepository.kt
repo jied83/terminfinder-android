@@ -28,17 +28,23 @@ class DataStoreTaskRepository(private val store: DataStore<StoredState>) : TaskR
 
     override suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int) {
         store.updateData { state ->
+            val requeried = state.tasks.any { it.id == id && it.locations != locations }
             state.copy(
                 tasks = state.tasks.map { task ->
                     if (task.id == id) task.copy(locations = locations, intervalMinutes = intervalMinutes) else task
                 },
+                knownDates = if (requeried) state.knownDates - id else state.knownDates,
             )
         }
     }
 
     override suspend fun remove(id: Long) {
         store.updateData { state ->
-            state.copy(tasks = state.tasks.filterNot { it.id == id }, records = state.records - id)
+            state.copy(
+                tasks = state.tasks.filterNot { it.id == id },
+                records = state.records - id,
+                knownDates = state.knownDates - id,
+            )
         }
     }
 }

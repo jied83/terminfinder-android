@@ -15,9 +15,11 @@ data class TaskItem(
 sealed interface TasksIntent {
     data class Open(val id: Long) : TasksIntent
     data object Add : TasksIntent
+    data object Settings : TasksIntent
 }
 
 sealed interface TasksEffect {
     data class ToStatus(val id: Long) : TasksEffect
     data object ToSetup : TasksEffect
+    data object ToSettings : TasksEffect
 }

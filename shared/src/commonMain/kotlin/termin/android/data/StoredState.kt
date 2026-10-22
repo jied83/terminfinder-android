@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okio.BufferedSink
 import okio.BufferedSource
+import termin.android.domain.AppSettings
 import termin.android.domain.CheckRecord
 import termin.android.domain.MonitorTask
 
@@ -12,6 +13,8 @@ import termin.android.domain.MonitorTask
 data class StoredState(
     val tasks: List<MonitorTask> = emptyList(),
     val records: Map<Long, List<CheckRecord>> = emptyMap(),
+    val knownDates: Map<Long, List<String>> = emptyMap(),
+    val settings: AppSettings = AppSettings(),
 )
 
 object StoredStateSerializer : OkioSerializer<StoredState> {

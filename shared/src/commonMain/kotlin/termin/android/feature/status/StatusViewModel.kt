@@ -23,7 +23,7 @@ class StatusViewModel(
         val task = tasks.observeAll().map { all -> all.firstOrNull { it.id == taskId } }.filterNotNull()
         combine(task, log.observe(taskId)) { current, history -> current to history }
             .onEach { (current, history) ->
-                reduce { copy(serviceId = current.serviceId, bookingUrl = current.query.serviceUrl, history = history) }
+                reduce { copy(serviceId = current.serviceId, bookingUrl = current.query.calendarUrl, history = history) }
             }
             .launchIn(viewModelScope)
     }

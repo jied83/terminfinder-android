@@ -47,8 +47,37 @@ class DataStoreCheckLogTest {
         assertEquals(emptyMap(), log.observeLatest().first())
     }
 
-    private fun record(taskId: Long, second: Int) =
-        CheckRecord(taskId, Instant.fromEpochSeconds(second.toLong()), Status.NONE, emptyList())
+    @Test
+    fun keepsTheKnownDatesBaselineAcrossUnreadableChecksBeyondTheHistoryLimit() = runTest {
+        val store = newStore(backgroundScope)
+        DataStoreTaskRepository(store).add(TaskDraft(120686, emptyList(), 2))
+        val log = DataStoreCheckLog(store, limit = 3)
+
+        log.append(record(taskId = 1, second = 1, status = Status.AVAILABLE, dates = listOf("2026-10-21")))
+        (2..9).forEach { log.append(record(taskId = 1, second = it, status = Status.BLOCKED)) }
+
+        assertEquals(mapOf(1L to setOf("2026-10-21")), log.knownDates())
+    }
+
+    @Test
+    fun forgetsTheBaselineWithTheTask() = runTest {
+        val store = newStore(backgroundScope)
+        val tasks = DataStoreTaskRepository(store)
+        tasks.add(TaskDraft(120686, emptyList(), 2))
+        val log = DataStoreCheckLog(store)
+
+        log.append(record(taskId = 1, second = 1, status = Status.AVAILABLE, dates = listOf("2026-10-21")))
+        tasks.remove(1)
+
+        assertEquals(emptyMap(), log.knownDates())
+    }
+
+    private fun record(
+        taskId: Long,
+        second: Int,
+        status: Status = Status.NONE,
+        dates: List<String> = emptyList(),
+    ) = CheckRecord(taskId, Instant.fromEpochSeconds(second.toLong()), status, dates)
 
     private fun newStore(scope: CoroutineScope): DataStore<StoredState> = DataStoreFactory.create(
         storage = OkioStorage(FileSystem.SYSTEM, StoredStateSerializer) {

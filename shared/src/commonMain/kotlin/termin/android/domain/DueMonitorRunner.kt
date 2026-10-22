@@ -32,6 +32,11 @@ class DueMonitorRunner(
         due.forEach { task ->
             val record = checker.check(task, known[task.id].orEmpty())
             log.append(record)
+            val name = record.serviceName?.trim()
+            if (!name.isNullOrEmpty() && name != task.serviceName) {
+                logDebug("runDue: task=${task.id} learned service name '$name'")
+                tasks.setServiceName(task.id, name)
+            }
             if (notify && record.newDates.isNotEmpty()) {
                 logDebug("runDue: task=${task.id} new dates=${record.newDates}, notifying")
                 notifier.notify(task, record.newDates)

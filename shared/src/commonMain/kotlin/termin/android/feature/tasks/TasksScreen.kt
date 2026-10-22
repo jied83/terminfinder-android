@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
@@ -94,7 +95,12 @@ fun TasksScreen(
             ) {
                 items(state.items, key = { it.id }) { item ->
                     ListItem(
-                        headlineContent = { Text(taskTitle(item.serviceId)) },
+                        headlineContent = {
+                            Text(
+                                text = taskTitle(item.serviceId, item.serviceName),
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
                         supportingContent = { Text(item.status.label()) },
                         trailingContent = item.checkedAt?.let { { Text(it.display(), style = MaterialTheme.typography.labelMedium) } },
                         modifier = Modifier.clickable { store.dispatch(TasksIntent.Open(item.id)) },

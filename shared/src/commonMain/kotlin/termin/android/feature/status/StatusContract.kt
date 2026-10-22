@@ -5,6 +5,7 @@ import terminwatcher.core.api.Status
 
 data class StatusState(
     val serviceId: Int = 0,
+    val serviceName: String? = null,
     val bookingUrl: String = "",
     val history: List<CheckRecord> = emptyList(),
     val confirmingDelete: Boolean = false,

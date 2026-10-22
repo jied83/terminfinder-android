@@ -41,7 +41,7 @@ fun EditScreen(
         }
     }
 
-    val title = if (state.loaded) taskTitle(state.serviceId) else stringResource(Res.string.edit_title)
+    val title = if (state.loaded) taskTitle(state.serviceId, state.serviceName) else stringResource(Res.string.edit_title)
 
     Scaffold(topBar = { BackTopAppBar(title, onBack) }) { padding ->
         Column(

@@ -21,12 +21,13 @@ class TasksViewModelTest : MainDispatcherTest() {
     fun listsTasksWithLatestStatus() = runTest {
         val at = Instant.fromEpochSeconds(100)
         val log = FakeLog().apply { append(CheckRecord(1, at, Status.AVAILABLE, listOf("2026-10-20"))) }
-        val viewModel = TasksViewModel(FakeTasks(task(1, 2), task(2, 4)), log)
+        val named = task(1, 2).copy(serviceName = "Personalausweis beantragen")
+        val viewModel = TasksViewModel(FakeTasks(named, task(2, 4)), log)
 
         assertEquals(
             listOf(
-                TaskItem(1, 120686, Status.AVAILABLE, at),
-                TaskItem(2, 120686, null, null),
+                TaskItem(1, 120686, "Personalausweis beantragen", Status.AVAILABLE, at),
+                TaskItem(2, 120686, null, null, null),
             ),
             viewModel.state.value.items,
         )

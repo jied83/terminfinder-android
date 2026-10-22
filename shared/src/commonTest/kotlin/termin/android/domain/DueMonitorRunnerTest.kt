@@ -37,6 +37,23 @@ class DueMonitorRunnerTest {
     }
 
     @Test
+    fun storesTheServiceNameReportedByTheCheckAndKeepsItWhenAbsent() = runTest {
+        val tasks = FakeTasks(task(1, 2))
+        val runner = runner(tasks)
+        checker.serviceName = "Personalausweis beantragen"
+
+        runner.runDue()
+
+        assertEquals("Personalausweis beantragen", tasks.tasks.value.single().serviceName)
+
+        checker.serviceName = null
+        clock.advance(2.minutes)
+        runner.runDue()
+
+        assertEquals("Personalausweis beantragen", tasks.tasks.value.single().serviceName)
+    }
+
+    @Test
     fun doesNothingWithoutTasks() = runTest {
         runner(FakeTasks()).runDue()
 

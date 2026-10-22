@@ -6,6 +6,7 @@ enum class EditField { LOCATIONS, INTERVAL }
 
 data class EditState(
     val serviceId: Int = 0,
+    val serviceName: String? = null,
     val locations: String = "",
     val interval: String = "",
     val error: EditField? = null,

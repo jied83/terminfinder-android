@@ -15,7 +15,7 @@ class TasksViewModel(
 
     init {
         combine(tasks.observeAll(), log.observeLatest()) { all, latest ->
-            all.map { TaskItem(it.id, it.serviceId, latest[it.id]?.status, latest[it.id]?.at) }
+            all.map { TaskItem(it.id, it.serviceId, it.serviceName, latest[it.id]?.status, latest[it.id]?.at) }
         }
             .onEach { items -> reduce { copy(items = items) } }
             .launchIn(viewModelScope)

@@ -23,4 +23,5 @@ private val timeFormat = LocalDateTime.Format {
 fun Instant.display(): String = timeFormat.format(toLocalDateTime(TimeZone.currentSystemDefault()))
 
 @Composable
-fun taskTitle(serviceId: Int): String = stringResource(Res.string.task_title, serviceId)
+fun taskTitle(serviceId: Int, serviceName: String?): String =
+    serviceName?.takeIf { it.isNotBlank() } ?: stringResource(Res.string.task_title, serviceId)

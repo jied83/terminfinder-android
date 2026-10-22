@@ -38,6 +38,17 @@ class DataStoreTaskRepository(private val store: DataStore<StoredState>) : TaskR
         }
     }
 
+    override suspend fun setServiceName(id: Long, name: String) {
+        store.updateData { state ->
+            if (state.tasks.none { it.id == id && it.serviceName != name }) return@updateData state
+            state.copy(
+                tasks = state.tasks.map { task ->
+                    if (task.id == id) task.copy(serviceName = name) else task
+                },
+            )
+        }
+    }
+
     override suspend fun remove(id: Long) {
         store.updateData { state ->
             state.copy(

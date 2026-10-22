@@ -22,6 +22,7 @@ class EditViewModel(
                 reduce {
                     copy(
                         serviceId = task.serviceId,
+                        serviceName = task.serviceName,
                         locations = task.locations.joinToString(", "),
                         interval = task.intervalMinutes.toString(),
                         loaded = true,

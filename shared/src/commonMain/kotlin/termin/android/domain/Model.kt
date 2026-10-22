@@ -11,8 +11,9 @@ data class MonitorTask(
     val serviceId: Int,
     val locations: List<Int>,
     val intervalMinutes: Int,
+    val serviceName: String? = null,
 ) {
-    val query: ServiceQuery get() = ServiceQuery(serviceId, locations)
+    val query: ServiceQuery get() = ServiceQuery(serviceId, locations, serviceName)
 }
 
 @Serializable
@@ -22,6 +23,7 @@ data class CheckRecord(
     val status: Status,
     val dates: List<String>,
     val newDates: List<String> = emptyList(),
+    val serviceName: String? = null,
 )
 
 val Status.isParsed: Boolean get() = this == Status.AVAILABLE || this == Status.NONE

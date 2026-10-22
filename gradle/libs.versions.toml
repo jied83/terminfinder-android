@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.4.20"
 agp = "9.3.0"
-termin-core = "0.1.0"
+termin-core = "0.1.1"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 compose = "1.12.1"

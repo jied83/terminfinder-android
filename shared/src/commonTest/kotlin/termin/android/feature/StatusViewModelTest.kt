@@ -38,6 +38,16 @@ class StatusViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun exposesTheServiceNameLearnedByACheck() = runTest {
+        assertEquals(null, viewModel.state.value.serviceName)
+
+        tasks.setServiceName(1, "Personalausweis beantragen")
+
+        assertEquals("Personalausweis beantragen", viewModel.state.value.serviceName)
+        assertEquals(120686, viewModel.state.value.serviceId)
+    }
+
+    @Test
     fun bookingKeepsTheTasksOfficeFilter() = runTest {
         tasks.update(1, listOf(122210, 122217), 2)
         log.append(CheckRecord(1, Instant.fromEpochSeconds(1), Status.AVAILABLE, listOf("2026-10-20")))

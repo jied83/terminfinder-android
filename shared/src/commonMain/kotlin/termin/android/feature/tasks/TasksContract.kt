@@ -8,6 +8,7 @@ data class TasksState(val items: List<TaskItem> = emptyList())
 data class TaskItem(
     val id: Long,
     val serviceId: Int,
+    val serviceName: String?,
     val status: Status?,
     val checkedAt: Instant?,
 )

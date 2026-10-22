@@ -25,6 +25,6 @@ class CoreTerminChecker(
             "api check task=${task.id} status=${result.status} dates=${result.dates} " +
                 "fresh=${result.freshDates} in ${clock.now() - started}",
         )
-        return CheckRecord(task.id, clock.now(), result.status, result.dates, result.freshDates)
+        return CheckRecord(task.id, clock.now(), result.status, result.dates, result.freshDates, result.serviceName)
     }
 }

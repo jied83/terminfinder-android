@@ -36,6 +36,10 @@ class FakeTasks(vararg initial: MonitorTask) : TaskRepository {
         all.map { if (it.id == id) it.copy(locations = locations, intervalMinutes = intervalMinutes) else it }
     }
 
+    override suspend fun setServiceName(id: Long, name: String) = tasks.update { all ->
+        all.map { if (it.id == id) it.copy(serviceName = name) else it }
+    }
+
     override suspend fun remove(id: Long) = tasks.update { all -> all.filterNot { it.id == id } }
 }
 
@@ -97,13 +101,21 @@ class FakeChecker(
     private val clock: Clock,
     var status: Status = Status.NONE,
     var dates: List<String> = emptyList(),
+    var serviceName: String? = null,
 ) : TerminChecker {
     val checked = mutableListOf<Long>()
 
     override suspend fun check(task: MonitorTask, knownDates: Set<String>): CheckRecord {
         checked += task.id
         val fresh = if (status == Status.AVAILABLE) (dates - knownDates).sorted() else emptyList()
-        return CheckRecord(task.id, clock.now(), status, if (status.isParsed) dates else emptyList(), fresh)
+        return CheckRecord(
+            task.id,
+            clock.now(),
+            status,
+            if (status.isParsed) dates else emptyList(),
+            fresh,
+            serviceName,
+        )
     }
 }
 

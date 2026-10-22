@@ -84,7 +84,7 @@ fun StatusScreen(
 
     Scaffold(
         topBar = {
-            BackTopAppBar(taskTitle(state.serviceId), onBack) {
+            BackTopAppBar(taskTitle(state.serviceId, state.serviceName), onBack) {
                 IconButton(onClick = { store.dispatch(StatusIntent.Edit) }) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_edit),

@@ -1,0 +1,54 @@
+package de.jied.terminfinder.app
+
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import androidx.core.app.AlarmManagerCompat
+import androidx.core.content.getSystemService
+import kotlinx.coroutines.flow.first
+import de.jied.terminfinder.domain.MonitorScheduler
+import de.jied.terminfinder.domain.TaskRepository
+import de.jied.terminfinder.domain.Ticks
+import de.jied.terminfinder.logDebug
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
+
+class AlarmMonitorScheduler(
+    private val context: Context,
+    private val tasks: TaskRepository,
+    private val clock: Clock,
+) : MonitorScheduler {
+    private val alarmManager = requireNotNull(context.getSystemService<AlarmManager>())
+
+    override suspend fun reschedule() {
+        val period = Ticks.period(tasks.observeAll().first().map { it.intervalMinutes })
+        val alarm = alarmIntent()
+        when {
+            period == null -> {
+                logDebug("reschedule: no tasks, alarm cancelled")
+                alarmManager.cancel(alarm)
+            }
+
+            AlarmManagerCompat.canScheduleExactAlarms(alarmManager) -> {
+                val next = clock.now() + period.minutes
+                logDebug("reschedule: period=${period}m next alarm at $next")
+                AlarmManagerCompat.setExactAndAllowWhileIdle(
+                    alarmManager,
+                    AlarmManager.RTC_WAKEUP,
+                    next.toEpochMilliseconds(),
+                    alarm,
+                )
+            }
+
+            else -> logDebug("reschedule: exact alarms not permitted, no alarm scheduled")
+        }
+    }
+
+    private fun alarmIntent(): PendingIntent = PendingIntent.getBroadcast(
+        context,
+        0,
+        Intent(context, MonitorAlarmReceiver::class.java),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+}

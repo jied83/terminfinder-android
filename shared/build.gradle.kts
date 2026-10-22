@@ -8,7 +8,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "termin.android.shared"
+        namespace = "de.jied.terminfinder.shared"
         compileSdk = libs.versions.sdk.compile.get().toInt()
         minSdk = libs.versions.sdk.min.get().toInt()
         androidResources { enable = true }
@@ -38,5 +38,5 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "termin.android.resources"
+    packageOfResClass = "de.jied.terminfinder.resources"
 }

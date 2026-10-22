@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "termin.android.app"
+    namespace = "de.jied.terminfinder.app"
     compileSdk = libs.versions.sdk.compile.get().toInt()
 
     defaultConfig {

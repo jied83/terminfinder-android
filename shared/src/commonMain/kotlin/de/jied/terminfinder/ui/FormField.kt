@@ -16,13 +16,18 @@ fun FormField(
     isError: Boolean,
     keyboardType: KeyboardType,
     onChange: (String) -> Unit,
+    helper: String? = null,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
         label = { Text(label) },
         isError = isError,
-        supportingText = if (isError) ({ Text(error) }) else null,
+        supportingText = when {
+            isError -> ({ Text(error) })
+            helper != null -> ({ Text(helper) })
+            else -> null
+        },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         modifier = Modifier.fillMaxWidth(),

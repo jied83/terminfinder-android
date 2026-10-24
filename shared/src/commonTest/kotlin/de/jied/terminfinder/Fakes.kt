@@ -10,6 +10,8 @@ import de.jied.terminfinder.domain.CheckRecord
 import de.jied.terminfinder.domain.MonitorScheduler
 import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.domain.NewDatesNotifier
+import de.jied.terminfinder.domain.ServiceCatalog
+import de.jied.terminfinder.domain.ServiceInfo
 import de.jied.terminfinder.domain.SettingsRepository
 import de.jied.terminfinder.domain.TaskDraft
 import de.jied.terminfinder.domain.TaskRepository
@@ -27,7 +29,7 @@ class FakeTasks(vararg initial: MonitorTask) : TaskRepository {
 
     override suspend fun add(draft: TaskDraft): MonitorTask {
         val id = (tasks.value.maxOfOrNull { it.id } ?: 0) + 1
-        val task = MonitorTask(id, draft.serviceId, draft.locations, draft.intervalMinutes)
+        val task = MonitorTask(id, draft.serviceId, draft.locations, draft.intervalMinutes, draft.serviceName)
         tasks.update { it + task }
         return task
     }
@@ -67,6 +69,24 @@ class FakeSettings(notifyNewDates: Boolean = true) : SettingsRepository {
 
     override suspend fun setNotifyNewDates(enabled: Boolean) =
         settings.update { it.copy(notifyNewDates = enabled) }
+}
+
+/** Hands out [services] on [load]; [failure] stands in for a blocked or offline portal. */
+class FakeCatalog(
+    private val services: List<ServiceInfo> = listOf(ServiceInfo(120686, "Wohnsitz anmelden")),
+    private val failure: Throwable? = null,
+) : ServiceCatalog {
+    var loads = 0
+    private var loaded = emptyList<ServiceInfo>()
+
+    override suspend fun load(): List<ServiceInfo> {
+        loads++
+        failure?.let { throw it }
+        loaded = services
+        return services
+    }
+
+    override fun cached(): List<ServiceInfo> = loaded
 }
 
 class FakeNotifier : NewDatesNotifier {

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import de.jied.terminfinder.resources.setup_interval_label
 import de.jied.terminfinder.resources.setup_locations_error
 import de.jied.terminfinder.resources.setup_locations_label
 import de.jied.terminfinder.resources.setup_next
+import de.jied.terminfinder.resources.setup_service_catalog_error
 import de.jied.terminfinder.resources.setup_service_error
 import de.jied.terminfinder.resources.setup_service_label
 import de.jied.terminfinder.resources.setup_title
@@ -54,9 +57,23 @@ fun SetupScreen(
                 label = stringResource(Res.string.setup_service_label),
                 error = stringResource(Res.string.setup_service_error),
                 isError = state.error == SetupStep.SERVICE,
-                keyboardType = KeyboardType.Number,
+                keyboardType = KeyboardType.Text,
                 onChange = { store.dispatch(SetupIntent.ServiceChanged(it)) },
+                helper = state.serviceName,
             )
+            if (state.searching) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+            if (state.catalogFailed) {
+                Text(
+                    text = stringResource(Res.string.setup_service_catalog_error),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (state.suggestions.isNotEmpty()) {
+                ServiceSuggestions(state.suggestions) { store.dispatch(SetupIntent.ServiceSelected(it)) }
+            }
             if (state.step >= SetupStep.LOCATIONS) {
                 FormField(
                     value = state.locations,

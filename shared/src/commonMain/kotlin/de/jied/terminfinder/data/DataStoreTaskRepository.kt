@@ -20,6 +20,7 @@ class DataStoreTaskRepository(private val store: DataStore<StoredState>) : TaskR
                 serviceId = draft.serviceId,
                 locations = draft.locations,
                 intervalMinutes = draft.intervalMinutes,
+                serviceName = draft.serviceName,
             )
             state.copy(tasks = state.tasks + task)
         }

@@ -4,8 +4,10 @@
     <string name="tasks_add">Add task</string>
     <string name="task_title">Service %1$s</string>
     <string name="setup_title">New task</string>
-    <string name="setup_service_label">Service ID</string>
-    <string name="setup_service_error">Enter the service number</string>
+    <string name="setup_service_label">Service ID or name</string>
+    <string name="setup_service_error">Enter a number or pick a service from the list</string>
+    <string name="setup_service_suggestion_id">ID %1$s</string>
+    <string name="setup_service_catalog_error">Could not load the service list. Enter the number instead.</string>
     <string name="setup_locations_label">Office IDs, comma-separated (empty = all)</string>
     <string name="setup_locations_error">Only numbers separated by commas</string>
     <string name="setup_interval_label">Polling interval, minutes</string>

@@ -32,4 +32,5 @@ data class TaskDraft(
     val serviceId: Int,
     val locations: List<Int>,
     val intervalMinutes: Int,
+    val serviceName: String? = null,
 )

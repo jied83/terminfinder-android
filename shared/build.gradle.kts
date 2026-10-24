@@ -20,6 +20,7 @@ kotlin {
             api(libs.termin.core)
             api(libs.datastore.core.okio)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

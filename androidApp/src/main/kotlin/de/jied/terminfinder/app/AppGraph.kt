@@ -7,14 +7,18 @@ import io.ktor.client.engine.okhttp.OkHttp
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import de.jied.terminfinder.check.CoreTerminChecker
+import de.jied.terminfinder.data.CachedServiceCatalog
+import de.jied.terminfinder.data.CatalogCacheSerializer
 import de.jied.terminfinder.data.DataStoreCheckLog
 import de.jied.terminfinder.data.DataStoreSettingsRepository
 import de.jied.terminfinder.data.DataStoreTaskRepository
+import de.jied.terminfinder.data.HttpServiceCatalogSource
 import de.jied.terminfinder.data.StoredStateSerializer
 import de.jied.terminfinder.domain.CheckLog
 import de.jied.terminfinder.domain.DueMonitorRunner
 import de.jied.terminfinder.domain.MonitorRunner
 import de.jied.terminfinder.domain.MonitorScheduler
+import de.jied.terminfinder.domain.ServiceCatalog
 import de.jied.terminfinder.domain.SettingsRepository
 import de.jied.terminfinder.domain.TaskRepository
 import terminwatcher.core.api.TerminCore
@@ -29,9 +33,20 @@ class AppGraph(context: Context) {
         },
     )
 
+    private val catalogStore = DataStoreFactory.create(
+        storage = OkioStorage(FileSystem.SYSTEM, CatalogCacheSerializer) {
+            context.filesDir.resolve("services.json").toOkioPath()
+        },
+    )
+
     val tasks: TaskRepository = DataStoreTaskRepository(store)
     val log: CheckLog = DataStoreCheckLog(store)
     val settings: SettingsRepository = DataStoreSettingsRepository(store)
+    val catalog: ServiceCatalog = CachedServiceCatalog(
+        store = catalogStore,
+        source = HttpServiceCatalogSource(OkHttp),
+        clock = clock,
+    )
     val scheduler: MonitorScheduler = AlarmMonitorScheduler(context, tasks, clock)
     val runner: MonitorRunner = DueMonitorRunner(
         tasks = tasks,

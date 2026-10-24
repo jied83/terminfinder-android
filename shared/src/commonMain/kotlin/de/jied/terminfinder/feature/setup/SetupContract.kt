@@ -1,5 +1,6 @@
 package de.jied.terminfinder.feature.setup
 
+import de.jied.terminfinder.domain.ServiceInfo
 import de.jied.terminfinder.domain.TaskDraft
 import de.jied.terminfinder.domain.TaskInput
 
@@ -8,6 +9,10 @@ enum class SetupStep { SERVICE, LOCATIONS, INTERVAL }
 data class SetupState(
     val step: SetupStep = SetupStep.SERVICE,
     val service: String = "",
+    val serviceName: String? = null,
+    val suggestions: List<ServiceInfo> = emptyList(),
+    val searching: Boolean = false,
+    val catalogFailed: Boolean = false,
     val locations: String = "",
     val interval: String = "",
     val error: SetupStep? = null,
@@ -26,12 +31,18 @@ data class SetupState(
     }
 
     fun draft(): TaskDraft? {
-        return TaskDraft(serviceId ?: return null, locationIds ?: return null, intervalMinutes ?: return null)
+        return TaskDraft(
+            serviceId = serviceId ?: return null,
+            locations = locationIds ?: return null,
+            intervalMinutes = intervalMinutes ?: return null,
+            serviceName = serviceName,
+        )
     }
 }
 
 sealed interface SetupIntent {
     data class ServiceChanged(val value: String) : SetupIntent
+    data class ServiceSelected(val service: ServiceInfo) : SetupIntent
     data class LocationsChanged(val value: String) : SetupIntent
     data class IntervalChanged(val value: String) : SetupIntent
     data object Next : SetupIntent

@@ -1,6 +1,7 @@
 package de.jied.terminfinder.feature.setup
 
-import de.jied.terminfinder.domain.ServiceInfo
+import de.jied.terminfinder.domain.CatalogEntry
+import de.jied.terminfinder.domain.CatalogSearch
 import de.jied.terminfinder.domain.TaskDraft
 import de.jied.terminfinder.domain.TaskInput
 
@@ -10,19 +11,36 @@ data class SetupState(
     val step: SetupStep = SetupStep.SERVICE,
     val service: String = "",
     val serviceName: String? = null,
-    val suggestions: List<ServiceInfo> = emptyList(),
+    val suggestions: List<CatalogEntry> = emptyList(),
     val searching: Boolean = false,
     val catalogFailed: Boolean = false,
     val locations: String = "",
+    val locationQuery: String? = null,
+    val locationOptions: List<CatalogEntry> = emptyList(),
+    val locationsLoading: Boolean = false,
+    val locationsFailed: Boolean = false,
     val interval: String = "",
     val error: SetupStep? = null,
     val saving: Boolean = false,
 ) {
     val serviceId: Int? get() = TaskInput.serviceId(service)
-
     val locationIds: List<Int>? get() = TaskInput.locationIds(locations)
+    val locationField: String get() = locationQuery ?: locations
+    val visibleLocations: List<CatalogEntry>
+        get() = locationQuery
+            ?.takeIf { it.trim().length >= CatalogSearch.MIN_QUERY_LENGTH }
+            ?.let { CatalogSearch.match(it, locationOptions) }
+            ?: locationOptions
 
+    val selectedLocations: Set<Int> get() = locationIds?.toSet() ?: emptySet()
     val intervalMinutes: Int? get() = TaskInput.intervalMinutes(interval)
+    fun withoutOffices(): SetupState = copy(
+        locations = "",
+        locationQuery = null,
+        locationOptions = emptyList(),
+        locationsLoading = false,
+        locationsFailed = false,
+    )
 
     fun isValid(step: SetupStep): Boolean = when (step) {
         SetupStep.SERVICE -> serviceId != null
@@ -42,8 +60,9 @@ data class SetupState(
 
 sealed interface SetupIntent {
     data class ServiceChanged(val value: String) : SetupIntent
-    data class ServiceSelected(val service: ServiceInfo) : SetupIntent
+    data class ServiceSelected(val service: CatalogEntry) : SetupIntent
     data class LocationsChanged(val value: String) : SetupIntent
+    data class LocationToggled(val location: CatalogEntry) : SetupIntent
     data class IntervalChanged(val value: String) : SetupIntent
     data object Next : SetupIntent
     data object Submit : SetupIntent

@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import de.jied.terminfinder.domain.CheckLog
+import de.jied.terminfinder.domain.LocationCatalog
 import de.jied.terminfinder.domain.MonitorScheduler
 import de.jied.terminfinder.domain.ServiceCatalog
 import de.jied.terminfinder.domain.SettingsRepository
@@ -46,6 +47,7 @@ fun App(
     scheduler: MonitorScheduler,
     settings: SettingsRepository,
     catalog: ServiceCatalog,
+    locations: LocationCatalog,
 ) {
     TerminTheme {
         val navController = rememberNavController()
@@ -60,7 +62,7 @@ fun App(
             }
             composable<SetupRoute> {
                 SetupScreen(
-                    store = viewModel { SetupViewModel(tasks, scheduler, catalog) },
+                    store = viewModel { SetupViewModel(tasks, scheduler, catalog, locations) },
                     onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
@@ -83,7 +85,7 @@ fun App(
             composable<EditRoute> { entry ->
                 val taskId = entry.toRoute<EditRoute>().taskId
                 EditScreen(
-                    store = viewModel { EditViewModel(taskId, tasks, scheduler) },
+                    store = viewModel { EditViewModel(taskId, tasks, scheduler, locations) },
                     onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )

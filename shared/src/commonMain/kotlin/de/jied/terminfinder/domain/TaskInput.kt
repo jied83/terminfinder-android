@@ -9,4 +9,15 @@ object TaskInput {
     }
 
     fun intervalMinutes(raw: String): Int? = raw.trim().toIntOrNull()?.takeIf(Ticks::isValidInterval)
+
+    fun looksLikeIds(raw: String): Boolean =
+        raw.isNotEmpty() && raw.all { it.isDigit() || it == ',' || it == ' ' }
+
+    fun toggleLocation(raw: String, id: Int): String {
+        val current = locationIds(raw) ?: return id.toString()
+        val toggled = if (id in current) current - id else current + id
+        return toggled.joinToString(SEPARATOR)
+    }
+
+    const val SEPARATOR: String = ", "
 }

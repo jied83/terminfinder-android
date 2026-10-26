@@ -8,8 +8,13 @@
     <string name="setup_service_error">Enter a number or pick a service from the list</string>
     <string name="setup_service_suggestion_id">ID %1$s</string>
     <string name="setup_service_catalog_error">Could not load the service list. Enter the number instead.</string>
-    <string name="setup_locations_label">Office IDs, comma-separated (empty = all)</string>
+    <string name="setup_locations_label">Office IDs or name (empty = all)</string>
     <string name="setup_locations_error">Only numbers separated by commas</string>
+    <string name="setup_locations_picker_label">Offices for this service</string>
+    <string name="setup_locations_selected">Selected: %1$s</string>
+    <string name="setup_locations_selected_all">All offices</string>
+    <string name="setup_locations_no_match">No office matches that name</string>
+    <string name="setup_locations_catalog_error">Could not load the office list. Enter the numbers instead.</string>
     <string name="setup_interval_label">Polling interval, minutes</string>
     <string name="setup_interval_error">A multiple of %1$s, at least %1$s</string>
     <string name="setup_next">Next</string>

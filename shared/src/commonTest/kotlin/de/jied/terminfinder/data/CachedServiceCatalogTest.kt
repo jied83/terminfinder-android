@@ -2,8 +2,8 @@ package de.jied.terminfinder.data
 
 import androidx.datastore.core.DataStore
 import de.jied.terminfinder.FakeClock
+import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.ServiceCatalogSource
-import de.jied.terminfinder.domain.ServiceInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -14,7 +14,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
 
-private val services = listOf(ServiceInfo(120686, "Wohnsitz anmelden"))
+private val services = listOf(CatalogEntry(120686, "Wohnsitz anmelden"))
 
 private class FakeStore(initial: CatalogCache = CatalogCache()) : DataStore<CatalogCache> {
     val state = MutableStateFlow(initial)
@@ -29,12 +29,12 @@ private class FakeStore(initial: CatalogCache = CatalogCache()) : DataStore<Cata
 }
 
 private class FakeSource(
-    private val answer: List<ServiceInfo> = services,
+    private val answer: List<CatalogEntry> = services,
     private val failure: Throwable? = null,
 ) : ServiceCatalogSource {
     var calls = 0
 
-    override suspend fun fetch(): List<ServiceInfo> {
+    override suspend fun fetch(): List<CatalogEntry> {
         calls++
         failure?.let { throw it }
         return answer
@@ -71,7 +71,7 @@ class CachedServiceCatalogTest {
     @Test
     fun aStaleCacheIsRefreshed() = runTest {
         val clock = FakeClock()
-        val stale = listOf(ServiceInfo(1, "Old"))
+        val stale = listOf(CatalogEntry(1, "Old"))
         val store = FakeStore(CatalogCache(clock.now - CATALOG_TTL - 1.days, stale))
         val source = FakeSource()
 

@@ -1,18 +1,18 @@
 package de.jied.terminfinder.domain
 
-object ServiceSearch {
+object CatalogSearch {
     const val MIN_QUERY_LENGTH: Int = 2
     const val LIMIT: Int = 20
 
-    data class Entry(val service: ServiceInfo, val folded: String)
+    data class Entry(val item: CatalogEntry, val folded: String)
 
-    fun index(services: List<ServiceInfo>): List<Entry> = services.map { Entry(it, normalize(it.name)) }
+    fun index(items: List<CatalogEntry>): List<Entry> = items.map { Entry(it, normalize(it.name)) }
 
-    fun search(query: String, index: List<Entry>, limit: Int = LIMIT): List<ServiceInfo> {
+    fun search(query: String, index: List<Entry>, limit: Int = LIMIT): List<CatalogEntry> {
         val raw = query.trim()
         if (raw.length < MIN_QUERY_LENGTH) return emptyList()
         if (raw.all(Char::isDigit)) {
-            return index.map { it.service }
+            return index.map { it.item }
                 .filter { it.id.toString().startsWith(raw) }
                 .sortedBy { it.id }
                 .take(limit)
@@ -20,15 +20,15 @@ object ServiceSearch {
         val words = normalize(raw).split(' ').filter { it.isNotEmpty() }
         if (words.isEmpty()) return emptyList()
         return index.asSequence()
-            .mapNotNull { entry -> rank(entry.folded, words)?.let { entry.service to it } }
+            .mapNotNull { entry -> rank(entry.folded, words)?.let { entry.item to it } }
             .sortedWith(compareBy({ it.second }, { it.first.name.length }, { it.first.name }))
             .take(limit)
             .map { it.first }
             .toList()
     }
 
-    fun match(query: String, services: List<ServiceInfo>, limit: Int = LIMIT): List<ServiceInfo> =
-        search(query, index(services), limit)
+    fun match(query: String, items: List<CatalogEntry>, limit: Int = LIMIT): List<CatalogEntry> =
+        search(query, index(items), limit)
 
     private fun rank(folded: String, words: List<String>): Int? {
         if (words.any { it !in folded }) return null

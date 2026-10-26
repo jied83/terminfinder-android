@@ -1,6 +1,6 @@
 package de.jied.terminfinder.data
 
-import de.jied.terminfinder.domain.ServiceInfo
+import de.jied.terminfinder.domain.CatalogEntry
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,9 +19,9 @@ class ServiceCatalogParserTest {
 
         assertEquals(
             listOf(
-                ServiceInfo(120335, "Abmeldung einer Wohnung"),
-                ServiceInfo(326417, "Anerkennung einer \"geeigneten Stelle\""),
-                ServiceInfo(121598, "Personalausweis beantragen"),
+                CatalogEntry(120335, "Abmeldung einer Wohnung"),
+                CatalogEntry(326417, "Anerkennung einer \"geeigneten Stelle\""),
+                CatalogEntry(121598, "Personalausweis beantragen"),
             ),
             parseServices(html),
         )
@@ -35,7 +35,7 @@ class ServiceCatalogParserTest {
             <a href="/dienstleistung/120686/"><i class="fas fa-info"></i></a>
         """.trimIndent()
 
-        assertEquals(listOf(ServiceInfo(120686, "Wohnsitz anmelden")), parseServices(html))
+        assertEquals(listOf(CatalogEntry(120686, "Wohnsitz anmelden")), parseServices(html))
     }
 
     @Test

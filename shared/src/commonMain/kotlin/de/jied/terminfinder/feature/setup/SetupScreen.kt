@@ -22,8 +22,6 @@ import de.jied.terminfinder.resources.Res
 import de.jied.terminfinder.resources.setup_add
 import de.jied.terminfinder.resources.setup_interval_error
 import de.jied.terminfinder.resources.setup_interval_label
-import de.jied.terminfinder.resources.setup_locations_error
-import de.jied.terminfinder.resources.setup_locations_label
 import de.jied.terminfinder.resources.setup_next
 import de.jied.terminfinder.resources.setup_service_catalog_error
 import de.jied.terminfinder.resources.setup_service_error
@@ -32,7 +30,9 @@ import de.jied.terminfinder.resources.setup_title
 import de.jied.terminfinder.mvi.CollectEffects
 import de.jied.terminfinder.mvi.Store
 import de.jied.terminfinder.ui.BackTopAppBar
+import de.jied.terminfinder.ui.CatalogPicker
 import de.jied.terminfinder.ui.FormField
+import de.jied.terminfinder.ui.OfficeField
 
 @Composable
 fun SetupScreen(
@@ -72,16 +72,22 @@ fun SetupScreen(
                 )
             }
             if (state.suggestions.isNotEmpty()) {
-                ServiceSuggestions(state.suggestions) { store.dispatch(SetupIntent.ServiceSelected(it)) }
+                CatalogPicker(
+                    entries = state.suggestions,
+                    onPick = { store.dispatch(SetupIntent.ServiceSelected(it)) },
+                )
             }
-            if (state.step >= SetupStep.LOCATIONS) {
-                FormField(
-                    value = state.locations,
-                    label = stringResource(Res.string.setup_locations_label),
-                    error = stringResource(Res.string.setup_locations_error),
+            if (state.step >= SetupStep.LOCATIONS && state.serviceId != null) {
+                OfficeField(
+                    value = state.locationField,
+                    entries = state.visibleLocations,
+                    selected = state.selectedLocations,
                     isError = state.error == SetupStep.LOCATIONS,
-                    keyboardType = KeyboardType.Text,
+                    loading = state.locationsLoading,
+                    failed = state.locationsFailed,
+                    filtering = state.locationQuery != null,
                     onChange = { store.dispatch(SetupIntent.LocationsChanged(it)) },
+                    onToggle = { store.dispatch(SetupIntent.LocationToggled(it)) },
                 )
             }
             if (state.step >= SetupStep.INTERVAL) {

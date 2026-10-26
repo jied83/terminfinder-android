@@ -8,8 +8,13 @@
     <string name="setup_service_error">Nummer eingeben oder Dienstleistung aus der Liste wählen</string>
     <string name="setup_service_suggestion_id">ID %1$s</string>
     <string name="setup_service_catalog_error">Liste der Dienstleistungen nicht geladen. Nummer direkt eingeben.</string>
-    <string name="setup_locations_label">Standort-IDs, durch Komma getrennt (leer = alle)</string>
+    <string name="setup_locations_label">Standort-IDs oder Name (leer = alle)</string>
     <string name="setup_locations_error">Nur Nummern, durch Komma getrennt</string>
+    <string name="setup_locations_picker_label">Standorte für diese Dienstleistung</string>
+    <string name="setup_locations_selected">Ausgewählt: %1$s</string>
+    <string name="setup_locations_selected_all">Alle Standorte</string>
+    <string name="setup_locations_no_match">Kein Standort mit diesem Namen</string>
+    <string name="setup_locations_catalog_error">Liste der Standorte nicht geladen. Nummern direkt eingeben.</string>
     <string name="setup_interval_label">Abfrageintervall in Minuten</string>
     <string name="setup_interval_error">Ein Vielfaches von %1$s, mindestens %1$s</string>
     <string name="setup_next">Weiter</string>

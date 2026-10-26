@@ -5,13 +5,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import de.jied.terminfinder.domain.AppSettings
+import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.CheckLog
 import de.jied.terminfinder.domain.CheckRecord
+import de.jied.terminfinder.domain.LocationCatalog
 import de.jied.terminfinder.domain.MonitorScheduler
 import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.domain.NewDatesNotifier
 import de.jied.terminfinder.domain.ServiceCatalog
-import de.jied.terminfinder.domain.ServiceInfo
 import de.jied.terminfinder.domain.SettingsRepository
 import de.jied.terminfinder.domain.TaskDraft
 import de.jied.terminfinder.domain.TaskRepository
@@ -73,20 +74,40 @@ class FakeSettings(notifyNewDates: Boolean = true) : SettingsRepository {
 
 /** Hands out [services] on [load]; [failure] stands in for a blocked or offline portal. */
 class FakeCatalog(
-    private val services: List<ServiceInfo> = listOf(ServiceInfo(120686, "Wohnsitz anmelden")),
+    private val services: List<CatalogEntry> = listOf(CatalogEntry(120686, "Wohnsitz anmelden")),
     private val failure: Throwable? = null,
 ) : ServiceCatalog {
     var loads = 0
-    private var loaded = emptyList<ServiceInfo>()
+    private var loaded = emptyList<CatalogEntry>()
 
-    override suspend fun load(): List<ServiceInfo> {
+    override suspend fun load(): List<CatalogEntry> {
         loads++
         failure?.let { throw it }
         loaded = services
         return services
     }
 
-    override fun cached(): List<ServiceInfo> = loaded
+    override fun cached(): List<CatalogEntry> = loaded
+}
+
+/** Answers per service id; [failure] stands in for a blocked or offline portal. */
+class FakeLocationCatalog(
+    private val offices: Map<Int, List<CatalogEntry>> = mapOf(
+        120686 to listOf(CatalogEntry(122210, "Bürgeramt Pankow"), CatalogEntry(122217, "Bürgeramt Mitte")),
+        120335 to listOf(CatalogEntry(122231, "Bürgeramt Kreuzberg")),
+    ),
+    private val failure: Throwable? = null,
+) : LocationCatalog {
+    var loads = 0
+    private val loaded = mutableMapOf<Int, List<CatalogEntry>>()
+
+    override suspend fun load(serviceId: Int): List<CatalogEntry> {
+        loads++
+        failure?.let { throw it }
+        return offices[serviceId].orEmpty().also { loaded[serviceId] = it }
+    }
+
+    override fun cached(serviceId: Int): List<CatalogEntry> = loaded[serviceId].orEmpty()
 }
 
 class FakeNotifier : NewDatesNotifier {

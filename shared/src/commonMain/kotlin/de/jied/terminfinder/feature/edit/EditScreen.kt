@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,10 +24,9 @@ import de.jied.terminfinder.resources.edit_save
 import de.jied.terminfinder.resources.edit_title
 import de.jied.terminfinder.resources.setup_interval_error
 import de.jied.terminfinder.resources.setup_interval_label
-import de.jied.terminfinder.resources.setup_locations_error
-import de.jied.terminfinder.resources.setup_locations_label
 import de.jied.terminfinder.ui.BackTopAppBar
 import de.jied.terminfinder.ui.FormField
+import de.jied.terminfinder.ui.OfficeField
 import de.jied.terminfinder.ui.taskTitle
 
 @Composable
@@ -48,13 +49,16 @@ fun EditScreen(
             modifier = Modifier.fillMaxWidth().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            FormField(
-                value = state.locations,
-                label = stringResource(Res.string.setup_locations_label),
-                error = stringResource(Res.string.setup_locations_error),
+            OfficeField(
+                value = state.locationField,
+                entries = state.visibleLocations,
+                selected = state.selectedLocations,
                 isError = state.error == EditField.LOCATIONS,
-                keyboardType = KeyboardType.Text,
+                loading = state.locationsLoading,
+                failed = state.locationsFailed,
+                filtering = state.locationQuery != null,
                 onChange = { store.dispatch(EditIntent.LocationsChanged(it)) },
+                onToggle = { store.dispatch(EditIntent.LocationToggled(it)) },
             )
             FormField(
                 value = state.interval,

@@ -2,9 +2,9 @@ package de.jied.terminfinder.data
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.okio.OkioSerializer
+import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.ServiceCatalog
 import de.jied.terminfinder.domain.ServiceCatalogSource
-import de.jied.terminfinder.domain.ServiceInfo
 import de.jied.terminfinder.logDebug
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
@@ -23,7 +23,7 @@ val CATALOG_TTL: Duration = 30.days
 @Serializable
 data class CatalogCache(
     val fetchedAt: Instant? = null,
-    val services: List<ServiceInfo> = emptyList(),
+    val services: List<CatalogEntry> = emptyList(),
 )
 
 class CachedServiceCatalog(
@@ -34,11 +34,11 @@ class CachedServiceCatalog(
 ) : ServiceCatalog {
 
     private val mutex = Mutex()
-    private var memory: List<ServiceInfo> = emptyList()
+    private var memory: List<CatalogEntry> = emptyList()
 
-    override fun cached(): List<ServiceInfo> = memory
+    override fun cached(): List<CatalogEntry> = memory
 
-    override suspend fun load(): List<ServiceInfo> = mutex.withLock {
+    override suspend fun load(): List<CatalogEntry> = mutex.withLock {
         memory.takeIf { it.isNotEmpty() }?.let { return it }
 
         val cache = store.data.first()
@@ -58,7 +58,7 @@ class CachedServiceCatalog(
         return remember(fetched)
     }
 
-    private fun remember(services: List<ServiceInfo>): List<ServiceInfo> {
+    private fun remember(services: List<CatalogEntry>): List<CatalogEntry> {
         memory = services
         return services
     }

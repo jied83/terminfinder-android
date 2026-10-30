@@ -10,8 +10,11 @@ import kotlin.test.BeforeTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MainDispatcherTest {
+    /** Effects run here instead of [Dispatchers.Default], so the loop settles before assertions. */
+    protected val dispatcher = UnconfinedTestDispatcher()
+
     @BeforeTest
-    fun setMain() = Dispatchers.setMain(UnconfinedTestDispatcher())
+    fun setMain() = Dispatchers.setMain(dispatcher)
 
     @AfterTest
     fun resetMain() = Dispatchers.resetMain()

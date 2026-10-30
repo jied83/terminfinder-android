@@ -1,62 +1,50 @@
 package de.jied.terminfinder.feature.edit
 
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import de.jied.terminfinder.domain.CatalogEntry
-import de.jied.terminfinder.domain.LocationCatalog
-import de.jied.terminfinder.domain.MonitorScheduler
+import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.domain.TaskInput
-import de.jied.terminfinder.domain.TaskRepository
-import de.jied.terminfinder.logDebug
+import de.jied.terminfinder.mvi.EffectHandler
 import de.jied.terminfinder.mvi.MviViewModel
+import de.jied.terminfinder.mvi.noEffect
+import de.jied.terminfinder.mvi.perform
+import de.jied.terminfinder.mvi.send
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 class EditViewModel(
     private val taskId: Long,
-    private val tasks: TaskRepository,
-    private val scheduler: MonitorScheduler,
-    private val locationCatalog: LocationCatalog,
-) : MviViewModel<EditIntent, EditState, EditEffect>(EditState()) {
+    effects: EffectHandler<EditEffect, EditIntent>,
+    background: CoroutineDispatcher = Dispatchers.Default,
+) : MviViewModel<EditIntent, EditState, EditEffect, EditMessage>(EditState(), effects, background) {
 
     init {
-        viewModelScope.launch {
-            val task = tasks.observeAll().first().firstOrNull { it.id == taskId }
-            if (task == null) {
-                emit(EditEffect.Done)
-            } else {
-                reduce {
-                    copy(
-                        serviceId = task.serviceId,
-                        serviceName = task.serviceName,
-                        locations = task.locations.joinToString(TaskInput.SEPARATOR),
-                        interval = task.intervalMinutes.toString(),
-                        loaded = true,
-                    )
-                }
-                loadOffices(task.serviceId)
-            }
-        }
-    }
-
-    private suspend fun loadOffices(serviceId: Int) {
-        reduce { copy(locationsLoading = true, locationsFailed = false) }
-        try {
-            val found = locationCatalog.load(serviceId)
-            reduce { copy(locationOptions = found, locationsLoading = false) }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            logDebug("office list for service $serviceId failed: $failure")
-            reduce { copy(locationsLoading = false, locationsFailed = true) }
-        }
+        reduce { perform(EditEffect.Load(taskId)) }
     }
 
     override fun dispatch(intent: EditIntent) = when (intent) {
         is EditIntent.LocationsChanged -> locationsChanged(intent.value)
         is EditIntent.LocationToggled -> locationToggled(intent.location)
-        is EditIntent.IntervalChanged -> reduce { copy(interval = intent.value, error = null) }
+        is EditIntent.IntervalChanged -> reduce { copy(interval = intent.value, error = null).noEffect }
         EditIntent.Save -> save()
+        is EditIntent.Loaded -> loaded(intent.task)
+        EditIntent.Missing -> reduce { send(EditMessage.Done) }
+        is EditIntent.OfficesLoaded -> reduce {
+            copy(locationOptions = intent.offices, locationsLoading = false).noEffect
+        }
+        EditIntent.OfficesFailed -> reduce { copy(locationsLoading = false, locationsFailed = true).noEffect }
+        EditIntent.Saved -> reduce { send(EditMessage.Done) }
+    }
+
+    private fun loaded(task: MonitorTask) = reduce {
+        copy(
+            serviceId = task.serviceId,
+            serviceName = task.serviceName,
+            locations = task.locations.joinToString(TaskInput.SEPARATOR),
+            interval = task.intervalMinutes.toString(),
+            loaded = true,
+            locationsLoading = true,
+            locationsFailed = false,
+        ).perform(EditEffect.LoadOffices(task.serviceId))
     }
 
     private fun locationsChanged(value: String) = reduce {
@@ -69,29 +57,21 @@ class EditViewModel(
             }
             TaskInput.looksLikeIds(value) -> copy(locations = value, locationQuery = null, error = null)
             else -> copy(locationQuery = value, error = null)
-        }
+        }.noEffect
     }
 
     private fun locationToggled(location: CatalogEntry) = reduce {
-        copy(locations = TaskInput.toggleLocation(locations, location.id), error = null)
+        copy(locations = TaskInput.toggleLocation(locations, location.id), error = null).noEffect
     }
 
-    private fun save() {
-        val current = state.value
-        if (current.saving || !current.loaded) return
-        val locations = current.locationIds
-        val interval = current.intervalMinutes
+    private fun save() = reduce {
+        val ids = locationIds
+        val minutes = intervalMinutes
         when {
-            locations == null -> reduce { copy(error = EditField.LOCATIONS) }
-            interval == null -> reduce { copy(error = EditField.INTERVAL) }
-            else -> {
-                reduce { copy(saving = true) }
-                viewModelScope.launch {
-                    tasks.update(taskId, locations, interval)
-                    scheduler.reschedule()
-                    emit(EditEffect.Done)
-                }
-            }
+            saving || !loaded -> noEffect
+            ids == null -> copy(error = EditField.LOCATIONS).noEffect
+            minutes == null -> copy(error = EditField.INTERVAL).noEffect
+            else -> copy(saving = true).perform(EditEffect.Save(taskId, ids, minutes))
         }
     }
 }

@@ -6,7 +6,8 @@ import de.jied.terminfinder.FakeLog
 import de.jied.terminfinder.FakeScheduler
 import de.jied.terminfinder.FakeTasks
 import de.jied.terminfinder.domain.CheckRecord
-import de.jied.terminfinder.feature.status.StatusEffect
+import de.jied.terminfinder.feature.status.StatusEffectHandler
+import de.jied.terminfinder.feature.status.StatusMessage
 import de.jied.terminfinder.feature.status.StatusIntent
 import de.jied.terminfinder.feature.status.StatusViewModel
 import de.jied.terminfinder.task
@@ -21,7 +22,7 @@ class StatusViewModelTest : MainDispatcherTest() {
     private val log = FakeLog()
     private val tasks = FakeTasks(task(1, 2), task(2, 6))
     private val scheduler = FakeScheduler()
-    private val viewModel by lazy { StatusViewModel(1, tasks, log, scheduler) }
+    private val viewModel by lazy { StatusViewModel(1, tasks, log, StatusEffectHandler(tasks, scheduler), dispatcher) }
 
     @Test
     fun bookingOpensTheCalendarWhenLatestHasSlots() = runTest {
@@ -32,8 +33,8 @@ class StatusViewModelTest : MainDispatcherTest() {
         assertEquals(2, viewModel.state.value.history.size)
         viewModel.dispatch(StatusIntent.Book)
         assertEquals(
-            StatusEffect.OpenUrl("https://service.berlin.de/terminvereinbarung/termin/all/120686/"),
-            viewModel.effects.first(),
+            StatusMessage.OpenUrl("https://service.berlin.de/terminvereinbarung/termin/all/120686/"),
+            viewModel.messages.first(),
         )
     }
 
@@ -55,11 +56,11 @@ class StatusViewModelTest : MainDispatcherTest() {
         viewModel.dispatch(StatusIntent.Book)
 
         assertEquals(
-            StatusEffect.OpenUrl(
+            StatusMessage.OpenUrl(
                 "https://service.berlin.de/terminvereinbarung/termin/tag.php" +
                     "?termin=1&anliegen[]=120686&dienstleister[]=122210&dienstleister[]=122217",
             ),
-            viewModel.effects.first(),
+            viewModel.messages.first(),
         )
     }
 
@@ -77,7 +78,7 @@ class StatusViewModelTest : MainDispatcherTest() {
     fun editIntentCarriesTaskId() = runTest {
         viewModel.dispatch(StatusIntent.Edit)
 
-        assertEquals(StatusEffect.ToEdit(1), viewModel.effects.first())
+        assertEquals(StatusMessage.ToEdit(1), viewModel.messages.first())
     }
 
     @Test
@@ -104,7 +105,7 @@ class StatusViewModelTest : MainDispatcherTest() {
         viewModel.dispatch(StatusIntent.Delete)
         viewModel.dispatch(StatusIntent.ConfirmDelete)
 
-        assertEquals(StatusEffect.Deleted, viewModel.effects.first())
+        assertEquals(StatusMessage.Deleted, viewModel.messages.first())
         assertEquals(listOf(task(2, 6)), tasks.tasks.value)
         assertEquals(1, scheduler.calls)
     }

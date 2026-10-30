@@ -19,8 +19,8 @@ sealed interface TasksIntent {
     data object Settings : TasksIntent
 }
 
-sealed interface TasksEffect {
-    data class ToStatus(val id: Long) : TasksEffect
-    data object ToSetup : TasksEffect
-    data object ToSettings : TasksEffect
+sealed interface TasksMessage {
+    data class ToStatus(val id: Long) : TasksMessage
+    data object ToSetup : TasksMessage
+    data object ToSettings : TasksMessage
 }

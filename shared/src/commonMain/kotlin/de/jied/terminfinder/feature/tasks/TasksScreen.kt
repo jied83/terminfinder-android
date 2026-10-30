@@ -19,16 +19,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import de.jied.terminfinder.mvi.CollectEffects
-import de.jied.terminfinder.mvi.Store
 import de.jied.terminfinder.resources.Res
 import de.jied.terminfinder.resources.ic_add
 import de.jied.terminfinder.resources.ic_settings
@@ -43,26 +39,15 @@ import de.jied.terminfinder.ui.taskTitle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksScreen(
-    store: Store<TasksIntent, TasksState, TasksEffect>,
-    onOpen: (Long) -> Unit,
-    onAdd: () -> Unit,
-    onSettings: () -> Unit,
+    state: TasksState,
+    onIntent: (TasksIntent) -> Unit,
 ) {
-    val state by store.state.collectAsStateWithLifecycle()
-    store.CollectEffects { effect ->
-        when (effect) {
-            is TasksEffect.ToStatus -> onOpen(effect.id)
-            TasksEffect.ToSetup -> onAdd()
-            TasksEffect.ToSettings -> onSettings()
-        }
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.tasks_title)) },
                 actions = {
-                    IconButton(onClick = { store.dispatch(TasksIntent.Settings) }) {
+                    IconButton(onClick = { onIntent(TasksIntent.Settings) }) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_settings),
                             contentDescription = stringResource(Res.string.settings_title),
@@ -75,7 +60,7 @@ fun TasksScreen(
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(Res.string.tasks_add)) },
                 icon = { Icon(painterResource(Res.drawable.ic_add), contentDescription = null) },
-                onClick = { store.dispatch(TasksIntent.Add) },
+                onClick = { onIntent(TasksIntent.Add) },
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -103,7 +88,7 @@ fun TasksScreen(
                         },
                         supportingContent = { Text(item.status.label()) },
                         trailingContent = item.checkedAt?.let { { Text(it.display(), style = MaterialTheme.typography.labelMedium) } },
-                        modifier = Modifier.clickable { store.dispatch(TasksIntent.Open(item.id)) },
+                        modifier = Modifier.clickable { onIntent(TasksIntent.Open(item.id)) },
                     )
                     HorizontalDivider()
                 }

@@ -9,11 +9,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
-import de.jied.terminfinder.mvi.Store
 import de.jied.terminfinder.resources.Res
 import de.jied.terminfinder.resources.settings_notify_new_dates
 import de.jied.terminfinder.resources.settings_notify_new_dates_hint
@@ -22,11 +19,11 @@ import de.jied.terminfinder.ui.BackTopAppBar
 
 @Composable
 fun SettingsScreen(
-    store: Store<SettingsIntent, SettingsState, Nothing>,
+    state: SettingsState,
+    onIntent: (SettingsIntent) -> Unit,
     onBack: () -> Unit,
 ) {
-    val state by store.state.collectAsStateWithLifecycle()
-    val toggle = { store.dispatch(SettingsIntent.NotifyNewDatesChanged(!state.notifyNewDates)) }
+    val toggle = { onIntent(SettingsIntent.NotifyNewDatesChanged(!state.notifyNewDates)) }
 
     Scaffold(topBar = { BackTopAppBar(stringResource(Res.string.settings_title), onBack) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {

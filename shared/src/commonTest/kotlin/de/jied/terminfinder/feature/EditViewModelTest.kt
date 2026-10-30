@@ -6,7 +6,8 @@ import de.jied.terminfinder.FakeLocationCatalog
 import de.jied.terminfinder.FakeScheduler
 import de.jied.terminfinder.FakeTasks
 import de.jied.terminfinder.domain.MonitorTask
-import de.jied.terminfinder.feature.edit.EditEffect
+import de.jied.terminfinder.feature.edit.EditEffectHandler
+import de.jied.terminfinder.feature.edit.EditMessage
 import de.jied.terminfinder.feature.edit.EditField
 import de.jied.terminfinder.feature.edit.EditIntent
 import de.jied.terminfinder.feature.edit.EditViewModel
@@ -18,7 +19,7 @@ class EditViewModelTest : MainDispatcherTest() {
     private val tasks = FakeTasks(MonitorTask(1, 120686, listOf(122210, 122217), 4))
     private val scheduler = FakeScheduler()
     private val offices = FakeLocationCatalog()
-    private val viewModel by lazy { EditViewModel(1, tasks, scheduler, offices) }
+    private val viewModel by lazy { EditViewModel(1, EditEffectHandler(tasks, scheduler, offices), dispatcher) }
 
     @Test
     fun prefillsLocationsAndInterval() {
@@ -34,7 +35,7 @@ class EditViewModelTest : MainDispatcherTest() {
         viewModel.dispatch(EditIntent.IntervalChanged("6"))
         viewModel.dispatch(EditIntent.Save)
 
-        assertEquals(EditEffect.Done, viewModel.effects.first())
+        assertEquals(EditMessage.Done, viewModel.messages.first())
         assertEquals(listOf(MonitorTask(1, 120686, listOf(122210), 6)), tasks.tasks.value)
         assertEquals(1, scheduler.calls)
     }
@@ -86,7 +87,7 @@ class EditViewModelTest : MainDispatcherTest() {
 
         viewModel.dispatch(EditIntent.Save)
 
-        assertEquals(EditEffect.Done, viewModel.effects.first())
+        assertEquals(EditMessage.Done, viewModel.messages.first())
         assertEquals(listOf(MonitorTask(1, 120686, listOf(122210), 4)), tasks.tasks.value)
     }
 
@@ -95,7 +96,7 @@ class EditViewModelTest : MainDispatcherTest() {
         viewModel.dispatch(EditIntent.LocationsChanged(""))
         viewModel.dispatch(EditIntent.Save)
 
-        assertEquals(EditEffect.Done, viewModel.effects.first())
+        assertEquals(EditMessage.Done, viewModel.messages.first())
         assertEquals(emptyList(), tasks.tasks.value.single().locations)
     }
 
@@ -115,7 +116,7 @@ class EditViewModelTest : MainDispatcherTest() {
 
         viewModel.dispatch(EditIntent.Save)
 
-        assertEquals(EditEffect.Done, viewModel.effects.first())
+        assertEquals(EditMessage.Done, viewModel.messages.first())
         assertEquals(listOf(MonitorTask(1, 120686, listOf(122210), 4)), tasks.tasks.value)
     }
 
@@ -123,9 +124,8 @@ class EditViewModelTest : MainDispatcherTest() {
     fun anUnreachableOfficeListStillLetsTheTaskBeSaved() = runTest {
         val offline = EditViewModel(
             1,
-            tasks,
-            scheduler,
-            FakeLocationCatalog(failure = IllegalStateException("offline")),
+            EditEffectHandler(tasks, scheduler, FakeLocationCatalog(failure = IllegalStateException("offline"))),
+            dispatcher,
         )
 
         assertTrue(offline.state.value.locationsFailed)
@@ -134,14 +134,14 @@ class EditViewModelTest : MainDispatcherTest() {
         offline.dispatch(EditIntent.LocationsChanged("122210"))
         offline.dispatch(EditIntent.Save)
 
-        assertEquals(EditEffect.Done, offline.effects.first())
+        assertEquals(EditMessage.Done, offline.messages.first())
         assertEquals(listOf(122210), tasks.tasks.value.single().locations)
     }
 
     @Test
     fun missingTaskLeavesTheScreen() = runTest {
-        val viewModel = EditViewModel(99, tasks, scheduler, offices)
+        val viewModel = EditViewModel(99, EditEffectHandler(tasks, scheduler, offices), dispatcher)
 
-        assertEquals(EditEffect.Done, viewModel.effects.first())
+        assertEquals(EditMessage.Done, viewModel.messages.first())
     }
 }

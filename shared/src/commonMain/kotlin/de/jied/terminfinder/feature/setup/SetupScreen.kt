@@ -11,11 +11,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.jied.terminfinder.domain.Ticks
 import org.jetbrains.compose.resources.stringResource
 import de.jied.terminfinder.resources.Res
@@ -27,8 +25,6 @@ import de.jied.terminfinder.resources.setup_service_catalog_error
 import de.jied.terminfinder.resources.setup_service_error
 import de.jied.terminfinder.resources.setup_service_label
 import de.jied.terminfinder.resources.setup_title
-import de.jied.terminfinder.mvi.CollectEffects
-import de.jied.terminfinder.mvi.Store
 import de.jied.terminfinder.ui.BackTopAppBar
 import de.jied.terminfinder.ui.CatalogPicker
 import de.jied.terminfinder.ui.FormField
@@ -36,17 +32,10 @@ import de.jied.terminfinder.ui.OfficeField
 
 @Composable
 fun SetupScreen(
-    store: Store<SetupIntent, SetupState, SetupEffect>,
-    onDone: () -> Unit,
+    state: SetupState,
+    onIntent: (SetupIntent) -> Unit,
     onBack: () -> Unit,
 ) {
-    val state by store.state.collectAsStateWithLifecycle()
-    store.CollectEffects { effect ->
-        when (effect) {
-            SetupEffect.Done -> onDone()
-        }
-    }
-
     Scaffold(topBar = { BackTopAppBar(stringResource(Res.string.setup_title), onBack) }) { padding ->
         Column(
             modifier = Modifier.fillMaxWidth().padding(padding).padding(16.dp),
@@ -58,7 +47,7 @@ fun SetupScreen(
                 error = stringResource(Res.string.setup_service_error),
                 isError = state.error == SetupStep.SERVICE,
                 keyboardType = KeyboardType.Text,
-                onChange = { store.dispatch(SetupIntent.ServiceChanged(it)) },
+                onChange = { onIntent(SetupIntent.ServiceChanged(it)) },
                 helper = state.serviceName,
             )
             if (state.searching) {
@@ -74,7 +63,7 @@ fun SetupScreen(
             if (state.suggestions.isNotEmpty()) {
                 CatalogPicker(
                     entries = state.suggestions,
-                    onPick = { store.dispatch(SetupIntent.ServiceSelected(it)) },
+                    onPick = { onIntent(SetupIntent.ServiceSelected(it)) },
                 )
             }
             if (state.step >= SetupStep.LOCATIONS && state.serviceId != null) {
@@ -86,8 +75,8 @@ fun SetupScreen(
                     loading = state.locationsLoading,
                     failed = state.locationsFailed,
                     filtering = state.locationQuery != null,
-                    onChange = { store.dispatch(SetupIntent.LocationsChanged(it)) },
-                    onToggle = { store.dispatch(SetupIntent.LocationToggled(it)) },
+                    onChange = { onIntent(SetupIntent.LocationsChanged(it)) },
+                    onToggle = { onIntent(SetupIntent.LocationToggled(it)) },
                 )
             }
             if (state.step >= SetupStep.INTERVAL) {
@@ -97,16 +86,16 @@ fun SetupScreen(
                     error = stringResource(Res.string.setup_interval_error, Ticks.MIN_MINUTES),
                     isError = state.error == SetupStep.INTERVAL,
                     keyboardType = KeyboardType.Number,
-                    onChange = { store.dispatch(SetupIntent.IntervalChanged(it)) },
+                    onChange = { onIntent(SetupIntent.IntervalChanged(it)) },
                 )
                 Button(
-                    onClick = { store.dispatch(SetupIntent.Submit) },
+                    onClick = { onIntent(SetupIntent.Submit) },
                     enabled = !state.saving,
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.setup_add)) }
             } else {
                 FilledTonalButton(
-                    onClick = { store.dispatch(SetupIntent.Next) },
+                    onClick = { onIntent(SetupIntent.Next) },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.setup_next)) }
             }

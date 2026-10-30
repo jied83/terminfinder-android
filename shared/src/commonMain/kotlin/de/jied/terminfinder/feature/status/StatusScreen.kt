@@ -20,16 +20,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import de.jied.terminfinder.feature.tasks.FAB_CLEARANCE
-import de.jied.terminfinder.mvi.CollectEffects
-import de.jied.terminfinder.mvi.Store
 import de.jied.terminfinder.resources.Res
 import de.jied.terminfinder.resources.ic_delete
 import de.jied.terminfinder.resources.ic_edit
@@ -49,33 +44,22 @@ import de.jied.terminfinder.ui.taskTitle
 
 @Composable
 fun StatusScreen(
-    store: Store<StatusIntent, StatusState, StatusEffect>,
+    state: StatusState,
+    onIntent: (StatusIntent) -> Unit,
     onBack: () -> Unit,
-    onEdit: (Long) -> Unit,
-    onDeleted: () -> Unit,
 ) {
-    val state by store.state.collectAsStateWithLifecycle()
-    val uriHandler = LocalUriHandler.current
-    store.CollectEffects { effect ->
-        when (effect) {
-            is StatusEffect.OpenUrl -> uriHandler.openUri(effect.url)
-            is StatusEffect.ToEdit -> onEdit(effect.id)
-            StatusEffect.Deleted -> onDeleted()
-        }
-    }
-
     if (state.confirmingDelete) {
         AlertDialog(
-            onDismissRequest = { store.dispatch(StatusIntent.DismissDelete) },
+            onDismissRequest = { onIntent(StatusIntent.DismissDelete) },
             title = { Text(stringResource(Res.string.status_delete_title)) },
             text = { Text(stringResource(Res.string.status_delete_message)) },
             confirmButton = {
-                TextButton(onClick = { store.dispatch(StatusIntent.ConfirmDelete) }) {
+                TextButton(onClick = { onIntent(StatusIntent.ConfirmDelete) }) {
                     Text(stringResource(Res.string.status_delete_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { store.dispatch(StatusIntent.DismissDelete) }) {
+                TextButton(onClick = { onIntent(StatusIntent.DismissDelete) }) {
                     Text(stringResource(Res.string.status_delete_cancel))
                 }
             },
@@ -85,13 +69,13 @@ fun StatusScreen(
     Scaffold(
         topBar = {
             BackTopAppBar(taskTitle(state.serviceId, state.serviceName), onBack) {
-                IconButton(onClick = { store.dispatch(StatusIntent.Edit) }) {
+                IconButton(onClick = { onIntent(StatusIntent.Edit) }) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_edit),
                         contentDescription = stringResource(Res.string.status_edit),
                     )
                 }
-                IconButton(onClick = { store.dispatch(StatusIntent.Delete) }) {
+                IconButton(onClick = { onIntent(StatusIntent.Delete) }) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_delete),
                         contentDescription = stringResource(Res.string.status_delete),
@@ -104,7 +88,7 @@ fun StatusScreen(
                 ExtendedFloatingActionButton(
                     text = { Text(stringResource(Res.string.status_book)) },
                     icon = { Icon(painterResource(Res.drawable.ic_open_in_new), contentDescription = null) },
-                    onClick = { store.dispatch(StatusIntent.Book) },
+                    onClick = { onIntent(StatusIntent.Book) },
                 )
             }
         },

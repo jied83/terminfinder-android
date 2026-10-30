@@ -1,6 +1,10 @@
 package de.jied.terminfinder
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,16 +17,25 @@ import de.jied.terminfinder.domain.MonitorScheduler
 import de.jied.terminfinder.domain.ServiceCatalog
 import de.jied.terminfinder.domain.SettingsRepository
 import de.jied.terminfinder.domain.TaskRepository
+import de.jied.terminfinder.feature.edit.EditEffectHandler
+import de.jied.terminfinder.feature.edit.EditMessages
 import de.jied.terminfinder.feature.edit.EditScreen
 import de.jied.terminfinder.feature.edit.EditViewModel
+import de.jied.terminfinder.feature.settings.SettingsEffectHandler
 import de.jied.terminfinder.feature.settings.SettingsScreen
 import de.jied.terminfinder.feature.settings.SettingsViewModel
+import de.jied.terminfinder.feature.setup.SetupEffectHandler
+import de.jied.terminfinder.feature.setup.SetupMessages
 import de.jied.terminfinder.feature.setup.SetupScreen
 import de.jied.terminfinder.feature.setup.SetupViewModel
+import de.jied.terminfinder.feature.status.StatusEffectHandler
+import de.jied.terminfinder.feature.status.StatusMessages
 import de.jied.terminfinder.feature.status.StatusScreen
 import de.jied.terminfinder.feature.status.StatusViewModel
+import de.jied.terminfinder.feature.tasks.TasksMessages
 import de.jied.terminfinder.feature.tasks.TasksScreen
 import de.jied.terminfinder.feature.tasks.TasksViewModel
+import de.jied.terminfinder.mvi.CollectMessages
 import de.jied.terminfinder.ui.TerminTheme
 
 @Serializable
@@ -53,42 +66,56 @@ fun App(
         val navController = rememberNavController()
         NavHost(navController, startDestination = TasksRoute) {
             composable<TasksRoute> {
-                TasksScreen(
-                    store = viewModel { TasksViewModel(tasks, log) },
-                    onOpen = { navController.navigate(StatusRoute(it)) },
-                    onAdd = { navController.navigate(SetupRoute) },
-                    onSettings = { navController.navigate(SettingsRoute) },
+                val store = viewModel { TasksViewModel(tasks, log) }
+                val state by store.state.collectAsStateWithLifecycle()
+                store.CollectMessages(
+                    remember(navController) {
+                        TasksMessages(
+                            onOpen = { navController.navigate(StatusRoute(it)) },
+                            onAdd = { navController.navigate(SetupRoute) },
+                            onSettings = { navController.navigate(SettingsRoute) },
+                        )
+                    },
                 )
+                TasksScreen(state, store::dispatch)
             }
             composable<SetupRoute> {
-                SetupScreen(
-                    store = viewModel { SetupViewModel(tasks, scheduler, catalog, locations) },
-                    onDone = { navController.popBackStack() },
-                    onBack = { navController.popBackStack() },
+                val store = viewModel { SetupViewModel(SetupEffectHandler(tasks, scheduler, catalog, locations)) }
+                val state by store.state.collectAsStateWithLifecycle()
+                store.CollectMessages(
+                    remember(navController) { SetupMessages(onDone = { navController.popBackStack() }) },
                 )
+                SetupScreen(state, store::dispatch, onBack = { navController.popBackStack() })
             }
             composable<StatusRoute> { entry ->
                 val taskId = entry.toRoute<StatusRoute>().taskId
-                StatusScreen(
-                    store = viewModel { StatusViewModel(taskId, tasks, log, scheduler) },
-                    onBack = { navController.popBackStack() },
-                    onEdit = { navController.navigate(EditRoute(it)) },
-                    onDeleted = { navController.popBackStack() },
+                val store = viewModel { StatusViewModel(taskId, tasks, log, StatusEffectHandler(tasks, scheduler)) }
+                val state by store.state.collectAsStateWithLifecycle()
+                val uriHandler = LocalUriHandler.current
+                store.CollectMessages(
+                    remember(navController, uriHandler) {
+                        StatusMessages(
+                            onOpenUrl = uriHandler::openUri,
+                            onEdit = { navController.navigate(EditRoute(it)) },
+                            onDeleted = { navController.popBackStack() },
+                        )
+                    },
                 )
+                StatusScreen(state, store::dispatch, onBack = { navController.popBackStack() })
             }
             composable<SettingsRoute> {
-                SettingsScreen(
-                    store = viewModel { SettingsViewModel(settings) },
-                    onBack = { navController.popBackStack() },
-                )
+                val store = viewModel { SettingsViewModel(settings, SettingsEffectHandler(settings)) }
+                val state by store.state.collectAsStateWithLifecycle()
+                SettingsScreen(state, store::dispatch, onBack = { navController.popBackStack() })
             }
             composable<EditRoute> { entry ->
                 val taskId = entry.toRoute<EditRoute>().taskId
-                EditScreen(
-                    store = viewModel { EditViewModel(taskId, tasks, scheduler, locations) },
-                    onDone = { navController.popBackStack() },
-                    onBack = { navController.popBackStack() },
+                val store = viewModel { EditViewModel(taskId, EditEffectHandler(tasks, scheduler, locations)) }
+                val state by store.state.collectAsStateWithLifecycle()
+                store.CollectMessages(
+                    remember(navController) { EditMessages(onDone = { navController.popBackStack() }) },
                 )
+                EditScreen(state, store::dispatch, onBack = { navController.popBackStack() })
             }
         }
     }

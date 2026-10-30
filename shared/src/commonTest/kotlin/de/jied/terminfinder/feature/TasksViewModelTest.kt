@@ -6,7 +6,7 @@ import de.jied.terminfinder.FakeLog
 import de.jied.terminfinder.FakeTasks
 import de.jied.terminfinder.domain.CheckRecord
 import de.jied.terminfinder.feature.tasks.TaskItem
-import de.jied.terminfinder.feature.tasks.TasksEffect
+import de.jied.terminfinder.feature.tasks.TasksMessage
 import de.jied.terminfinder.feature.tasks.TasksIntent
 import de.jied.terminfinder.feature.tasks.TasksViewModel
 import de.jied.terminfinder.task
@@ -38,10 +38,10 @@ class TasksViewModelTest : MainDispatcherTest() {
         val viewModel = TasksViewModel(FakeTasks(), FakeLog())
 
         viewModel.dispatch(TasksIntent.Open(7))
-        assertEquals(TasksEffect.ToStatus(7), viewModel.effects.first())
+        assertEquals(TasksMessage.ToStatus(7), viewModel.messages.first())
         viewModel.dispatch(TasksIntent.Add)
-        assertEquals(TasksEffect.ToSetup, viewModel.effects.first())
+        assertEquals(TasksMessage.ToSetup, viewModel.messages.first())
         viewModel.dispatch(TasksIntent.Settings)
-        assertEquals(TasksEffect.ToSettings, viewModel.effects.first())
+        assertEquals(TasksMessage.ToSettings, viewModel.messages.first())
     }
 }

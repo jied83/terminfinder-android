@@ -2,6 +2,7 @@ package de.jied.terminfinder.feature.edit
 
 import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.CatalogSearch
+import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.domain.TaskInput
 
 enum class EditField { LOCATIONS, INTERVAL }
@@ -37,8 +38,20 @@ sealed interface EditIntent {
     data class LocationToggled(val location: CatalogEntry) : EditIntent
     data class IntervalChanged(val value: String) : EditIntent
     data object Save : EditIntent
+
+    data class Loaded(val task: MonitorTask) : EditIntent
+    data object Missing : EditIntent
+    data class OfficesLoaded(val offices: List<CatalogEntry>) : EditIntent
+    data object OfficesFailed : EditIntent
+    data object Saved : EditIntent
 }
 
 sealed interface EditEffect {
-    data object Done : EditEffect
+    data class Load(val taskId: Long) : EditEffect
+    data class LoadOffices(val serviceId: Int) : EditEffect
+    data class Save(val taskId: Long, val locations: List<Int>, val interval: Int) : EditEffect
+}
+
+sealed interface EditMessage {
+    data object Done : EditMessage
 }

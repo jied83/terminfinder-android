@@ -8,7 +8,8 @@ import de.jied.terminfinder.FakeScheduler
 import de.jied.terminfinder.FakeTasks
 import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.MonitorTask
-import de.jied.terminfinder.feature.setup.SetupEffect
+import de.jied.terminfinder.feature.setup.SetupEffectHandler
+import de.jied.terminfinder.feature.setup.SetupMessage
 import de.jied.terminfinder.feature.setup.SetupIntent
 import de.jied.terminfinder.feature.setup.SetupStep
 import de.jied.terminfinder.feature.setup.SetupViewModel
@@ -30,7 +31,7 @@ class SetupViewModelTest : MainDispatcherTest() {
     )
 
     // No debounce: with the unconfined dispatcher the search then runs inside dispatch().
-    private val viewModel by lazy { SetupViewModel(tasks, scheduler, catalog, offices, Duration.ZERO) }
+    private val viewModel by lazy { SetupViewModel(SetupEffectHandler(tasks, scheduler, catalog, offices, Duration.ZERO), dispatcher) }
 
     @Test
     fun invalidStepDoesNotAdvance() {
@@ -57,7 +58,7 @@ class SetupViewModelTest : MainDispatcherTest() {
         viewModel.dispatch(SetupIntent.IntervalChanged("4"))
         viewModel.dispatch(SetupIntent.Submit)
 
-        assertEquals(SetupEffect.Done, viewModel.effects.first())
+        assertEquals(SetupMessage.Done, viewModel.messages.first())
         assertEquals(listOf(MonitorTask(1, 120686, listOf(122210, 122217), 4)), tasks.tasks.value)
         assertEquals(1, scheduler.calls)
     }
@@ -88,7 +89,7 @@ class SetupViewModelTest : MainDispatcherTest() {
         viewModel.dispatch(SetupIntent.IntervalChanged("4"))
         viewModel.dispatch(SetupIntent.Submit)
 
-        assertEquals(SetupEffect.Done, viewModel.effects.first())
+        assertEquals(SetupMessage.Done, viewModel.messages.first())
         assertEquals(
             listOf(MonitorTask(1, 120335, emptyList(), 4, "Abmeldung einer Wohnung")),
             tasks.tasks.value,
@@ -121,11 +122,14 @@ class SetupViewModelTest : MainDispatcherTest() {
     @Test
     fun anUnreachableCatalogIsReported() {
         val offline = SetupViewModel(
-            tasks,
-            scheduler,
-            FakeCatalog(failure = IllegalStateException("offline")),
-            offices,
-            Duration.ZERO,
+            SetupEffectHandler(
+                tasks,
+                scheduler,
+                FakeCatalog(failure = IllegalStateException("offline")),
+                offices,
+                Duration.ZERO,
+            ),
+            dispatcher,
         )
 
         offline.dispatch(SetupIntent.ServiceChanged("wohnung"))
@@ -190,11 +194,8 @@ class SetupViewModelTest : MainDispatcherTest() {
     fun anUnreachableOfficeListLeavesTheFieldUsable() = runTest {
         val offlineOffices = FakeLocationCatalog(failure = IllegalStateException("offline"))
         val offline = SetupViewModel(
-            tasks,
-            scheduler,
-            catalog,
-            offlineOffices,
-            Duration.ZERO,
+            SetupEffectHandler(tasks, scheduler, catalog, offlineOffices, Duration.ZERO),
+            dispatcher,
         )
 
         offline.dispatch(SetupIntent.ServiceChanged("120686"))
@@ -209,7 +210,7 @@ class SetupViewModelTest : MainDispatcherTest() {
         offline.dispatch(SetupIntent.Next)
         offline.dispatch(SetupIntent.Submit)
 
-        assertEquals(SetupEffect.Done, offline.effects.first())
+        assertEquals(SetupMessage.Done, offline.messages.first())
         assertEquals(listOf(122210), tasks.tasks.value.single().locations)
         assertEquals(1, offlineOffices.loads)
     }

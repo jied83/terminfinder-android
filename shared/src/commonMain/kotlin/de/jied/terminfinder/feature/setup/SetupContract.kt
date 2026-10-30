@@ -19,6 +19,7 @@ data class SetupState(
     val locationOptions: List<CatalogEntry> = emptyList(),
     val locationsLoading: Boolean = false,
     val locationsFailed: Boolean = false,
+    val officesFor: Int? = null,
     val interval: String = "",
     val error: SetupStep? = null,
     val saving: Boolean = false,
@@ -40,6 +41,7 @@ data class SetupState(
         locationOptions = emptyList(),
         locationsLoading = false,
         locationsFailed = false,
+        officesFor = null,
     )
 
     fun isValid(step: SetupStep): Boolean = when (step) {
@@ -66,8 +68,22 @@ sealed interface SetupIntent {
     data class IntervalChanged(val value: String) : SetupIntent
     data object Next : SetupIntent
     data object Submit : SetupIntent
+
+    data class NameResolved(val serviceId: Int, val name: String?) : SetupIntent
+    data class SuggestionsLoaded(val query: String, val suggestions: List<CatalogEntry>) : SetupIntent
+    data class SearchFailed(val query: String) : SetupIntent
+    data class OfficesLoaded(val serviceId: Int, val offices: List<CatalogEntry>) : SetupIntent
+    data class OfficesFailed(val serviceId: Int) : SetupIntent
+    data object Saved : SetupIntent
 }
 
 sealed interface SetupEffect {
-    data object Done : SetupEffect
+    data class ResolveName(val serviceId: Int) : SetupEffect
+    data class Search(val query: String) : SetupEffect
+    data class LoadOffices(val serviceId: Int) : SetupEffect
+    data class Save(val draft: TaskDraft) : SetupEffect
+}
+
+sealed interface SetupMessage {
+    data object Done : SetupMessage
 }

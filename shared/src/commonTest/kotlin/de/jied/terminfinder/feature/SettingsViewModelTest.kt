@@ -1,9 +1,10 @@
 package de.jied.terminfinder.feature
 
-import kotlinx.coroutines.test.runTest
 import de.jied.terminfinder.FakeSettings
+import de.jied.terminfinder.feature.settings.SettingsEffectHandler
 import de.jied.terminfinder.feature.settings.SettingsIntent
 import de.jied.terminfinder.feature.settings.SettingsViewModel
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,9 +12,12 @@ import kotlin.test.assertTrue
 
 class SettingsViewModelTest : MainDispatcherTest() {
 
+    private fun viewModelFor(settings: FakeSettings) =
+        SettingsViewModel(settings, SettingsEffectHandler(settings), dispatcher)
+
     @Test
     fun showsTheStoredToggle() = runTest {
-        val viewModel = SettingsViewModel(FakeSettings(notifyNewDates = false))
+        val viewModel = viewModelFor(FakeSettings(notifyNewDates = false))
 
         assertFalse(viewModel.state.value.notifyNewDates)
     }
@@ -21,7 +25,7 @@ class SettingsViewModelTest : MainDispatcherTest() {
     @Test
     fun togglingPersistsAndIsReflectedBack() = runTest {
         val settings = FakeSettings(notifyNewDates = true)
-        val viewModel = SettingsViewModel(settings)
+        val viewModel = viewModelFor(settings)
 
         viewModel.dispatch(SettingsIntent.NotifyNewDatesChanged(false))
 

@@ -20,10 +20,16 @@ sealed interface StatusIntent {
     data object Delete : StatusIntent
     data object ConfirmDelete : StatusIntent
     data object DismissDelete : StatusIntent
+
+    data object Removed : StatusIntent
 }
 
 sealed interface StatusEffect {
-    data class OpenUrl(val url: String) : StatusEffect
-    data class ToEdit(val id: Long) : StatusEffect
-    data object Deleted : StatusEffect
+    data class Delete(val taskId: Long) : StatusEffect
+}
+
+sealed interface StatusMessage {
+    data class OpenUrl(val url: String) : StatusMessage
+    data class ToEdit(val id: Long) : StatusMessage
+    data object Deleted : StatusMessage
 }

@@ -5,9 +5,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberUpdatedState
 
 @Composable
-fun <E> Store<*, *, E>.CollectEffects(handler: (E) -> Unit) {
-    val currentHandler = rememberUpdatedState(handler)
+fun <M> Store<*, *, M>.CollectMessages(controller: MessageController<M>) {
+    val current = rememberUpdatedState(controller)
     LaunchedEffect(this) {
-        effects.collect { currentHandler.value(it) }
+        messages.collect { current.value.handle(it) }
     }
 }

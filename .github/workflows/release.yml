@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Bump version
+        run: |
+          old=$(grep '^versionCode=' version.properties | cut -d= -f2)
+          code=$((old + 100))
+          name=$(grep '^versionName=' version.properties | cut -d= -f2)
+          if git ls-remote --exit-code --tags origin "refs/tags/v$code" >/dev/null; then
+            echo "::error::Tag v$code already exists"; exit 1
+          fi
+          sed -i "s/^versionCode=.*/versionCode=$code/" version.properties
+          echo "CODE=$code" >> "$GITHUB_ENV"
+          echo "NAME=$name" >> "$GITHUB_ENV"
+
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "::error::KEYSTORE_BASE64 secret missing"; exit 1; fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Test and build signed release
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :shared:testAndroidHostTest :androidApp:assembleRelease :androidApp:bundleRelease
+
+      - name: Collect and verify artifacts
+        run: |
+          mkdir dist
+          cp androidApp/build/outputs/apk/release/androidApp-release.apk "dist/terminfinder-$NAME-$CODE.apk"
+          cp androidApp/build/outputs/bundle/release/androidApp-release.aab "dist/terminfinder-$NAME-$CODE.aab"
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          "$apksigner" verify --print-certs "dist/terminfinder-$NAME-$CODE.apk"
+
+      # Only reached when the build succeeded, so a failed run never consumes a version number.
+      - name: Commit version and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release v$CODE"
+          git tag "v$CODE"
+          git push --atomic origin HEAD:main "v$CODE"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$CODE" dist/* \
+            --title "Termin Finder $NAME ($CODE)" \
+            --generate-notes

@@ -3,3 +3,6 @@
 build/
 local.properties
 .idea/
+androidApp/release/
+*.jks
+*.keystore

@@ -2,10 +2,11 @@ package de.jied.terminfinder.feature.edit
 
 import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.CatalogSearch
+import de.jied.terminfinder.domain.DateSelection
 import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.domain.TaskInput
 
-enum class EditField { LOCATIONS, INTERVAL }
+enum class EditField { LOCATIONS, INTERVAL, DATES }
 
 data class EditState(
     val serviceId: Int = 0,
@@ -16,6 +17,7 @@ data class EditState(
     val locationsLoading: Boolean = false,
     val locationsFailed: Boolean = false,
     val interval: String = "",
+    val dates: DateSelection? = null,
     val error: EditField? = null,
     val loaded: Boolean = false,
     val saving: Boolean = false,
@@ -37,6 +39,7 @@ sealed interface EditIntent {
     data class LocationsChanged(val value: String) : EditIntent
     data class LocationToggled(val location: CatalogEntry) : EditIntent
     data class IntervalChanged(val value: String) : EditIntent
+    data class DatesChanged(val dates: DateSelection?) : EditIntent
     data object Save : EditIntent
 
     data class Loaded(val task: MonitorTask) : EditIntent
@@ -49,7 +52,12 @@ sealed interface EditIntent {
 sealed interface EditEffect {
     data class Load(val taskId: Long) : EditEffect
     data class LoadOffices(val serviceId: Int) : EditEffect
-    data class Save(val taskId: Long, val locations: List<Int>, val interval: Int) : EditEffect
+    data class Save(
+        val taskId: Long,
+        val locations: List<Int>,
+        val interval: Int,
+        val dates: DateSelection?,
+    ) : EditEffect
 }
 
 sealed interface EditMessage {

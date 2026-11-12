@@ -19,6 +19,16 @@
     <string name="setup_interval_error">A multiple of %1$s, at least %1$s</string>
     <string name="setup_next">Next</string>
     <string name="setup_add">Add</string>
+    <string name="dates_label">Wanted dates</string>
+    <string name="dates_any">Any date</string>
+    <string name="dates_days">Specific days</string>
+    <string name="dates_range">Range</string>
+    <string name="dates_add">Add date</string>
+    <string name="dates_remove">Remove %1$s</string>
+    <string name="dates_range_value">%1$s – %2$s</string>
+    <string name="dates_error">Pick at least one date or a full range</string>
+    <string name="dates_ok">OK</string>
+    <string name="dates_cancel">Cancel</string>
     <string name="edit_title">Edit task</string>
     <string name="edit_save">Save</string>
     <string name="status_book">Go to booking</string>

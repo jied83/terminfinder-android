@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -27,6 +29,7 @@ import de.jied.terminfinder.resources.setup_service_label
 import de.jied.terminfinder.resources.setup_title
 import de.jied.terminfinder.ui.BackTopAppBar
 import de.jied.terminfinder.ui.CatalogPicker
+import de.jied.terminfinder.ui.DatesField
 import de.jied.terminfinder.ui.FormField
 import de.jied.terminfinder.ui.OfficeField
 
@@ -38,7 +41,7 @@ fun SetupScreen(
 ) {
     Scaffold(topBar = { BackTopAppBar(stringResource(Res.string.setup_title), onBack) }) { padding ->
         Column(
-            modifier = Modifier.fillMaxWidth().padding(padding).padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             FormField(
@@ -87,6 +90,13 @@ fun SetupScreen(
                     isError = state.error == SetupStep.INTERVAL,
                     keyboardType = KeyboardType.Number,
                     onChange = { onIntent(SetupIntent.IntervalChanged(it)) },
+                )
+            }
+            if (state.step >= SetupStep.DATES) {
+                DatesField(
+                    selection = state.dates,
+                    isError = state.error == SetupStep.DATES,
+                    onChange = { onIntent(SetupIntent.DatesChanged(it)) },
                 )
                 Button(
                     onClick = { onIntent(SetupIntent.Submit) },

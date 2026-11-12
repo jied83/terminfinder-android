@@ -28,7 +28,7 @@ class EditEffectHandler(
             EditIntent.OfficesFailed
         }
         is EditEffect.Save -> {
-            tasks.update(effect.taskId, effect.locations, effect.interval)
+            tasks.update(effect.taskId, effect.locations, effect.interval, effect.dates)
             scheduler.reschedule()
             EditIntent.Saved
         }

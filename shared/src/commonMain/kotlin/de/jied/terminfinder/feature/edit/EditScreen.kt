@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +23,7 @@ import de.jied.terminfinder.resources.edit_title
 import de.jied.terminfinder.resources.setup_interval_error
 import de.jied.terminfinder.resources.setup_interval_label
 import de.jied.terminfinder.ui.BackTopAppBar
+import de.jied.terminfinder.ui.DatesField
 import de.jied.terminfinder.ui.FormField
 import de.jied.terminfinder.ui.OfficeField
 import de.jied.terminfinder.ui.taskTitle
@@ -35,7 +38,7 @@ fun EditScreen(
 
     Scaffold(topBar = { BackTopAppBar(title, onBack) }) { padding ->
         Column(
-            modifier = Modifier.fillMaxWidth().padding(padding).padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OfficeField(
@@ -56,6 +59,11 @@ fun EditScreen(
                 isError = state.error == EditField.INTERVAL,
                 keyboardType = KeyboardType.Number,
                 onChange = { onIntent(EditIntent.IntervalChanged(it)) },
+            )
+            DatesField(
+                selection = state.dates,
+                isError = state.error == EditField.DATES,
+                onChange = { onIntent(EditIntent.DatesChanged(it)) },
             )
             Button(
                 onClick = { onIntent(EditIntent.Save) },

@@ -2,10 +2,11 @@ package de.jied.terminfinder.feature.setup
 
 import de.jied.terminfinder.domain.CatalogEntry
 import de.jied.terminfinder.domain.CatalogSearch
+import de.jied.terminfinder.domain.DateSelection
 import de.jied.terminfinder.domain.TaskDraft
 import de.jied.terminfinder.domain.TaskInput
 
-enum class SetupStep { SERVICE, LOCATIONS, INTERVAL }
+enum class SetupStep { SERVICE, LOCATIONS, INTERVAL, DATES }
 
 data class SetupState(
     val step: SetupStep = SetupStep.SERVICE,
@@ -21,6 +22,7 @@ data class SetupState(
     val locationsFailed: Boolean = false,
     val officesFor: Int? = null,
     val interval: String = "",
+    val dates: DateSelection? = null,
     val error: SetupStep? = null,
     val saving: Boolean = false,
 ) {
@@ -48,14 +50,17 @@ data class SetupState(
         SetupStep.SERVICE -> serviceId != null
         SetupStep.LOCATIONS -> locationIds != null
         SetupStep.INTERVAL -> intervalMinutes != null
+        SetupStep.DATES -> dates?.isValid ?: true
     }
 
     fun draft(): TaskDraft? {
+        if (!isValid(SetupStep.DATES)) return null
         return TaskDraft(
             serviceId = serviceId ?: return null,
             locations = locationIds ?: return null,
             intervalMinutes = intervalMinutes ?: return null,
             serviceName = serviceName,
+            dates = dates,
         )
     }
 }
@@ -66,6 +71,7 @@ sealed interface SetupIntent {
     data class LocationsChanged(val value: String) : SetupIntent
     data class LocationToggled(val location: CatalogEntry) : SetupIntent
     data class IntervalChanged(val value: String) : SetupIntent
+    data class DatesChanged(val dates: DateSelection?) : SetupIntent
     data object Next : SetupIntent
     data object Submit : SetupIntent
 

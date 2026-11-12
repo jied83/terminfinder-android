@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 interface TaskRepository {
     fun observeAll(): Flow<List<MonitorTask>>
     suspend fun add(draft: TaskDraft): MonitorTask
-    suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int)
+    suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int, dates: DateSelection?)
     suspend fun setServiceName(id: Long, name: String)
     suspend fun remove(id: Long)
 }

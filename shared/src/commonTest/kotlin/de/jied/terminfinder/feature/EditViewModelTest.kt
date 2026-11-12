@@ -5,6 +5,7 @@ import kotlinx.coroutines.test.runTest
 import de.jied.terminfinder.FakeLocationCatalog
 import de.jied.terminfinder.FakeScheduler
 import de.jied.terminfinder.FakeTasks
+import de.jied.terminfinder.domain.DateSelection
 import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.feature.edit.EditEffectHandler
 import de.jied.terminfinder.feature.edit.EditMessage
@@ -38,6 +39,34 @@ class EditViewModelTest : MainDispatcherTest() {
         assertEquals(EditMessage.Done, viewModel.messages.first())
         assertEquals(listOf(MonitorTask(1, 120686, listOf(122210), 6)), tasks.tasks.value)
         assertEquals(1, scheduler.calls)
+    }
+
+    @Test
+    fun savingStoresTheDateSelectionAndClearingItMeansAnyDate() = runTest {
+        val wanted = DateSelection(days = listOf("2026-10-10", "2026-10-12"))
+        viewModel.dispatch(EditIntent.DatesChanged(wanted))
+        viewModel.dispatch(EditIntent.Save)
+
+        assertEquals(EditMessage.Done, viewModel.messages.first())
+        assertEquals(wanted, tasks.tasks.value.single().dates)
+
+        val reopened = EditViewModel(1, EditEffectHandler(tasks, scheduler, offices), dispatcher)
+        assertEquals(wanted, reopened.state.value.dates)
+        reopened.dispatch(EditIntent.DatesChanged(null))
+        reopened.dispatch(EditIntent.Save)
+
+        assertEquals(EditMessage.Done, reopened.messages.first())
+        assertEquals(null, tasks.tasks.value.single().dates)
+    }
+
+    @Test
+    fun anIncompleteDateSelectionBlocksSave() {
+        viewModel.dispatch(EditIntent.DatesChanged(DateSelection(from = "2026-10-20", to = "2026-10-10")))
+        viewModel.dispatch(EditIntent.Save)
+
+        assertEquals(EditField.DATES, viewModel.state.value.error)
+        assertEquals(null, tasks.tasks.value.single().dates)
+        assertEquals(0, scheduler.calls)
     }
 
     @Test

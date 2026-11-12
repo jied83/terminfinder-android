@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import de.jied.terminfinder.domain.DateSelection
 import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.domain.TaskDraft
 import de.jied.terminfinder.domain.TaskRepository
@@ -21,18 +22,23 @@ class DataStoreTaskRepository(private val store: DataStore<StoredState>) : TaskR
                 locations = draft.locations,
                 intervalMinutes = draft.intervalMinutes,
                 serviceName = draft.serviceName,
+                dates = draft.dates,
             )
             state.copy(tasks = state.tasks + task)
         }
         return task
     }
 
-    override suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int) {
+    override suspend fun update(id: Long, locations: List<Int>, intervalMinutes: Int, dates: DateSelection?) {
         store.updateData { state ->
-            val requeried = state.tasks.any { it.id == id && it.locations != locations }
+            val requeried = state.tasks.any { it.id == id && (it.locations != locations || it.dates != dates) }
             state.copy(
                 tasks = state.tasks.map { task ->
-                    if (task.id == id) task.copy(locations = locations, intervalMinutes = intervalMinutes) else task
+                    if (task.id == id) {
+                        task.copy(locations = locations, intervalMinutes = intervalMinutes, dates = dates)
+                    } else {
+                        task
+                    }
                 },
                 knownDates = if (requeried) state.knownDates - id else state.knownDates,
             )

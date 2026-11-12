@@ -7,6 +7,7 @@ import de.jied.terminfinder.FakeLocationCatalog
 import de.jied.terminfinder.FakeScheduler
 import de.jied.terminfinder.FakeTasks
 import de.jied.terminfinder.domain.CatalogEntry
+import de.jied.terminfinder.domain.DateSelection
 import de.jied.terminfinder.domain.MonitorTask
 import de.jied.terminfinder.feature.setup.SetupEffectHandler
 import de.jied.terminfinder.feature.setup.SetupMessage
@@ -61,6 +62,33 @@ class SetupViewModelTest : MainDispatcherTest() {
         assertEquals(SetupMessage.Done, viewModel.messages.first())
         assertEquals(listOf(MonitorTask(1, 120686, listOf(122210, 122217), 4)), tasks.tasks.value)
         assertEquals(1, scheduler.calls)
+    }
+
+    @Test
+    fun theDatesStepComesLastAndItsSelectionTravelsToTheTask() = runTest {
+        fillUpToInterval()
+        viewModel.dispatch(SetupIntent.IntervalChanged("4"))
+        viewModel.dispatch(SetupIntent.Next)
+        assertEquals(SetupStep.DATES, viewModel.state.value.step)
+
+        val wanted = DateSelection(from = "2026-10-01", to = "2026-10-31")
+        viewModel.dispatch(SetupIntent.DatesChanged(wanted))
+        viewModel.dispatch(SetupIntent.Submit)
+
+        assertEquals(SetupMessage.Done, viewModel.messages.first())
+        assertEquals(wanted, tasks.tasks.value.single().dates)
+    }
+
+    @Test
+    fun anIncompleteDateSelectionBlocksSubmit() {
+        fillUpToInterval()
+        viewModel.dispatch(SetupIntent.IntervalChanged("4"))
+        viewModel.dispatch(SetupIntent.Next)
+        viewModel.dispatch(SetupIntent.DatesChanged(DateSelection()))
+        viewModel.dispatch(SetupIntent.Submit)
+
+        assertEquals(SetupStep.DATES, viewModel.state.value.error)
+        assertEquals(emptyList(), tasks.tasks.value)
     }
 
     @Test

@@ -19,6 +19,16 @@
     <string name="setup_interval_error">Ein Vielfaches von %1$s, mindestens %1$s</string>
     <string name="setup_next">Weiter</string>
     <string name="setup_add">Hinzufügen</string>
+    <string name="dates_label">Gewünschte Tage</string>
+    <string name="dates_any">Beliebiges Datum</string>
+    <string name="dates_days">Bestimmte Tage</string>
+    <string name="dates_range">Zeitraum</string>
+    <string name="dates_add">Datum hinzufügen</string>
+    <string name="dates_remove">%1$s entfernen</string>
+    <string name="dates_range_value">%1$s – %2$s</string>
+    <string name="dates_error">Mindestens ein Datum oder einen vollständigen Zeitraum wählen</string>
+    <string name="dates_ok">OK</string>
+    <string name="dates_cancel">Abbrechen</string>
     <string name="edit_title">Aufgabe bearbeiten</string>
     <string name="edit_save">Speichern</string>
     <string name="status_book">Zur Buchung</string>

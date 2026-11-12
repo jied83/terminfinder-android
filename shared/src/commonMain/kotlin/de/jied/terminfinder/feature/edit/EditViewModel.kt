@@ -25,6 +25,7 @@ class EditViewModel(
         is EditIntent.LocationsChanged -> locationsChanged(intent.value)
         is EditIntent.LocationToggled -> locationToggled(intent.location)
         is EditIntent.IntervalChanged -> reduce { copy(interval = intent.value, error = null).noEffect }
+        is EditIntent.DatesChanged -> reduce { copy(dates = intent.dates, error = null).noEffect }
         EditIntent.Save -> save()
         is EditIntent.Loaded -> loaded(intent.task)
         EditIntent.Missing -> reduce { send(EditMessage.Done) }
@@ -41,6 +42,7 @@ class EditViewModel(
             serviceName = task.serviceName,
             locations = task.locations.joinToString(TaskInput.SEPARATOR),
             interval = task.intervalMinutes.toString(),
+            dates = task.dates,
             loaded = true,
             locationsLoading = true,
             locationsFailed = false,
@@ -71,7 +73,8 @@ class EditViewModel(
             saving || !loaded -> noEffect
             ids == null -> copy(error = EditField.LOCATIONS).noEffect
             minutes == null -> copy(error = EditField.INTERVAL).noEffect
-            else -> copy(saving = true).perform(EditEffect.Save(taskId, ids, minutes))
+            dates?.isValid == false -> copy(error = EditField.DATES).noEffect
+            else -> copy(saving = true).perform(EditEffect.Save(taskId, ids, minutes, dates))
         }
     }
 }

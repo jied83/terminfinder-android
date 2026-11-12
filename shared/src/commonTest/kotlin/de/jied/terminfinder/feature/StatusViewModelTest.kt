@@ -50,7 +50,7 @@ class StatusViewModelTest : MainDispatcherTest() {
 
     @Test
     fun bookingKeepsTheTasksOfficeFilter() = runTest {
-        tasks.update(1, listOf(122210, 122217), 2)
+        tasks.update(1, listOf(122210, 122217), 2, null)
         log.append(CheckRecord(1, Instant.fromEpochSeconds(1), Status.AVAILABLE, listOf("2026-10-20")))
 
         viewModel.dispatch(StatusIntent.Book)

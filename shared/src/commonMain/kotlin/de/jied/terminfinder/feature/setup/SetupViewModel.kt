@@ -23,6 +23,7 @@ class SetupViewModel(
         is SetupIntent.LocationsChanged -> locationsChanged(intent.value)
         is SetupIntent.LocationToggled -> locationToggled(intent.location)
         is SetupIntent.IntervalChanged -> reduce { copy(interval = intent.value, error = null).noEffect }
+        is SetupIntent.DatesChanged -> reduce { copy(dates = intent.dates, error = null).noEffect }
         SetupIntent.Next -> next()
         SetupIntent.Submit -> submit()
         is SetupIntent.NameResolved -> reduce {

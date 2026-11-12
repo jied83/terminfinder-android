@@ -1,6 +1,7 @@
 package de.jied.terminfinder.ui
 
 import androidx.compose.runtime.Composable
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format.char
@@ -19,6 +20,17 @@ private val timeFormat = LocalDateTime.Format {
     char(':')
     minute()
 }
+
+private val dateFormat = LocalDate.Format {
+    day()
+    char('.')
+    monthNumber()
+    char('.')
+    year()
+}
+
+fun displayDate(iso: String): String =
+    runCatching { dateFormat.format(LocalDate.parse(iso)) }.getOrDefault(iso)
 
 fun Instant.display(): String = timeFormat.format(toLocalDateTime(TimeZone.currentSystemDefault()))
 

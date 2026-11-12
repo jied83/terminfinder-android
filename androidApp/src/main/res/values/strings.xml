@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Termin</string>
+    <string name="app_name">Termin Finder</string>
     <string name="monitor_notification_title">Checking appointments</string>
     <string name="monitor_channel_name">Monitoring</string>
     <string name="alert_channel_name">New appointments</string>

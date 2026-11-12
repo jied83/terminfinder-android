@@ -11,7 +11,7 @@ android {
         applicationId = "de.jied.terminfinder"
         minSdk = libs.versions.sdk.min.get().toInt()
         targetSdk = libs.versions.sdk.compile.get().toInt()
-        versionCode = 1
+        versionCode = 370100100 // XX-XXX-XX-XX api-version-build-variant(1-wear os 0-main app)
         versionName = "0.1.0"
     }
 

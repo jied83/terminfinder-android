@@ -169,3 +169,20 @@ class TasksViewModelTest : MainDispatcherTest() {
 - Official Kotlin code style (`kotlin.code.style=official`), trailing commas, no wildcard imports.
 - Comments explain *why*, not *what*.
 - Before finishing a change, run `./gradlew :shared:testAndroidHostTest :androidApp:assembleDebug`.
+
+## Releases
+
+Releases are built by the manual GitHub Actions workflow `.github/workflows/release.yml`
+(Actions → Release → Run workflow, or `gh workflow run release.yml`). It:
+
+1. Adds 100 to `versionCode` in `version.properties` (the *build* segment of
+   `api-version-build-variant`). Change `versionName` there by hand.
+2. Runs the unit tests and builds a signed APK and AAB.
+3. Only if that succeeds, commits the bump to `main`, tags `v{versionCode}`, and publishes a
+   GitHub Release with both files attached.
+
+Required repo secrets: `KEYSTORE_BASE64` (`base64 -i release.jks`), `KEYSTORE_PASSWORD`,
+`KEY_ALIAS`, `KEY_PASSWORD`. Gradle reads them from the `ANDROID_KEYSTORE_PATH`,
+`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` environment variables;
+without these, a local `assembleRelease` is unsigned. Never commit a keystore. Pull after each release, since the
+workflow pushes to `main`.
